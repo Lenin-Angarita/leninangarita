@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lecture 1: Sequences and Limits — Real Analysis I</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=STIX+Two+Text:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../assets/css/style.css">
+
+<!-- MathJax: renders \( \) inline and \[ \] display math. This is the only
+     thing you need for the LaTeX math itself — write it exactly as in your
+     .tex source and wrap it in these delimiters. -->
+<script>
+  window.MathJax = {
+    tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']], tags: 'none' },
+    svg: { fontCache: 'global' }
+  };
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js" id="MathJax-script" async></script>
+</head>
+<body>
+
+<header class="site-header">
+  <nav class="nav">
+    <a class="nav__brand" href="../../../index.html">[Your Name]</a>
+    <button class="hamburger" data-nav-toggle aria-label="Open menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav__links" data-nav-links>
+      <li><a href="../../../index.html">Profile</a></li>
+      <li><a href="../../../research.html">Research</a></li>
+      <li><a href="../../../courses.html" aria-current="page">Teaching</a></li>
+    </ul>
+    <div class="nav__right">
+      <button class="theme-toggle" data-theme-toggle aria-label="Toggle dark mode">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"/></svg>
+      </button>
+    </div>
+  </nav>
+</header>
+
+<main>
+  <div class="lecture-layout" style="padding-top:2.4rem;">
+
+    <!-- Table of contents: hand-written to match this lecture's headings.
+         Each <a href="#id"> must match a heading's id below. -->
+    <nav class="toc" aria-label="Table of contents">
+      <div class="toc__label">On this page</div>
+      <ol>
+        <li><a href="#introduction">Introduction</a></li>
+        <li><a href="#defining-convergence">Defining convergence</a></li>
+        <li><a href="#uniqueness">Uniqueness of limits</a></li>
+        <li><a href="#examples">Examples</a></li>
+        <li><a href="#algebra-of-limits">Algebra of limits</a></li>
+      </ol>
+    </nav>
+
+    <article class="prose">
+      <div class="breadcrumb">
+        <a href="../../../courses.html">Teaching</a> <span>/</span>
+        <a href="../index.html">Real Analysis I</a> <span>/</span> <span>Lecture 1</span>
+      </div>
+
+      <div class="lecture-header">
+        <span class="eyebrow">Real Analysis I · Lecture 1</span>
+        <h1>Sequences and Limits</h1>
+        <div class="lecture-meta">Fall 2026 · [Date]</div>
+      </div>
+
+      <h2 id="introduction">Introduction</h2>
+      <p>
+        Analysis begins with a single question: what does it mean for a sequence of numbers
+        to <em>approach</em> a value? Calculus treats this idea informally; here we make it
+        precise, in a form robust enough to build continuity, differentiation, and integration
+        on top of.
+      </p>
+
+      <h2 id="defining-convergence">Defining convergence</h2>
+      <p>
+        There are two standard, equivalent ways to state the definition. The &epsilon;&ndash;N
+        form is the one you will use in every proof; the neighborhood form is the one that
+        generalizes to metric and topological spaces later in the course.
+      </p>
+
+      <div class="tabs">
+        <div class="tab-list" role="tablist">
+          <button class="tab-btn" role="tab" aria-selected="true">&epsilon;&ndash;N form</button>
+          <button class="tab-btn" role="tab" aria-selected="false">Neighborhood form</button>
+        </div>
+
+        <div class="tab-panel active">
+          <div class="math-box math-box--definition">
+            <span class="math-box__label">Definition 1.1.</span>
+            <p>
+              Let \((a_n)\) be a sequence of real numbers and let \(L \in \mathbb{R}\). We say
+              that \((a_n)\) <strong>converges</strong> to \(L\), written
+              \(\lim_{n\to\infty} a_n = L\), if
+            </p>
+            <p>
+              for every \(\varepsilon &gt; 0\) there exists \(N \in \mathbb{N}\) such that
+              \(n \ge N\) implies \(|a_n - L| &lt; \varepsilon\).
+            </p>
+          </div>
+          <div class="eq-block">
+            <div>\[ \forall\, \varepsilon>0,\ \exists\, N\in\mathbb{N} : n \ge N \implies |a_n - L| < \varepsilon \]</div>
+            <span class="eq-block__num">(1)</span>
+            <button class="eq-copy" data-latex="\forall\, \varepsilon>0,\ \exists\, N\in\mathbb{N} : n \ge N \implies |a_n - L| < \varepsilon" aria-label="Copy LaTeX source">TeX</button>
+          </div>
+        </div>
+
+        <div class="tab-panel">
+          <div class="math-box math-box--definition">
+            <span class="math-box__label">Definition 1.1&prime; (equivalent).</span>
+            <p>
+              \((a_n)\) converges to \(L\) if every open interval containing \(L\) contains
+              all but finitely many terms of the sequence — that is, all terms from some
+              index onward.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <h2 id="uniqueness">Uniqueness of limits</h2>
+      <div class="math-box math-box--theorem">
+        <span class="math-box__label">Theorem 1.2 (Uniqueness of limits).</span>
+        <p>If a sequence converges, its limit is unique.</p>
+      </div>
+
+      <details class="proof">
+        <summary>Proof</summary>
+        <div class="proof__body">
+          <p>
+            Suppose, for contradiction, that \(a_n \to L_1\) and \(a_n \to L_2\) with
+            \(L_1 \ne L_2\). Set \(\varepsilon = \tfrac{|L_1 - L_2|}{2} &gt; 0\).
+          </p>
+          <p>
+            By convergence to \(L_1\) there is \(N_1\) with \(|a_n - L_1| &lt; \varepsilon\)
+            for \(n \ge N_1\); by convergence to \(L_2\) there is \(N_2\) with
+            \(|a_n - L_2| &lt; \varepsilon\) for \(n \ge N_2\). Take \(n \ge \max(N_1, N_2)\).
+            By the triangle inequality,
+          </p>
+          <div class="eq-block">
+            <div>\[ |L_1 - L_2| \le |L_1 - a_n| + |a_n - L_2| < \varepsilon + \varepsilon = |L_1 - L_2|, \]</div>
+            <span class="eq-block__num">(2)</span>
+            <button class="eq-copy" data-latex="|L_1 - L_2| \le |L_1 - a_n| + |a_n - L_2| < \varepsilon + \varepsilon = |L_1 - L_2|" aria-label="Copy LaTeX source">TeX</button>
+          </div>
+          <p>
+            a strict inequality \(|L_1-L_2| &lt; |L_1-L_2|\), which is impossible. Hence
+            \(L_1 = L_2\). <span class="qed">&#8718;</span>
+          </p>
+        </div>
+      </details>
+
+      <h2 id="examples">Examples</h2>
+      <div class="math-box math-box--example">
+        <span class="math-box__label">Example 1.3.</span>
+        <p>The sequence \(a_n = \dfrac{1}{n}\) converges to \(0\).</p>
+        <p>
+          Given \(\varepsilon &gt; 0\), the Archimedean property gives \(N \in \mathbb{N}\)
+          with \(N &gt; 1/\varepsilon\). Then for all \(n \ge N\),
+        </p>
+        <div class="eq-block">
+          <div>\[ \left|\frac{1}{n} - 0\right| = \frac{1}{n} \le \frac{1}{N} < \varepsilon. \]</div>
+          <span class="eq-block__num">(3)</span>
+          <button class="eq-copy" data-latex="\left|\frac{1}{n} - 0\right| = \frac{1}{n} \le \frac{1}{N} < \varepsilon" aria-label="Copy LaTeX source">TeX</button>
+        </div>
+      </div>
+
+      <h2 id="algebra-of-limits">Algebra of limits</h2>
+      <div class="math-box math-box--theorem">
+        <span class="math-box__label">Theorem 1.4 (Algebra of limits).</span>
+        <p>
+          If \(a_n \to L\) and \(b_n \to M\), then \(a_n + b_n \to L + M\) and
+          \(a_n b_n \to LM\); if additionally \(M \ne 0\), then \(a_n/b_n \to L/M\).
+        </p>
+      </div>
+
+      <div class="math-box math-box--remark">
+        <span class="math-box__label">Remark.</span>
+        <p>
+          Each part is a direct &epsilon;&ndash;N estimate in the same spirit as
+          Example&nbsp;1.3, and is left as an exercise. We will use this theorem freely from
+          the next lecture onward, so it is worth writing out at least the sum case yourself.
+        </p>
+      </div>
+
+      <div class="lecture-nav">
+        <a href="../index.html">&larr; <span>Back to</span> Real Analysis I</a>
+        <!-- Once Lecture 2 exists, add a right-hand link here, e.g.:
+        <a href="lecture-02.html" style="text-align:right;"><span>Next</span> Monotone &amp; Cauchy Sequences &rarr;</a>
+        -->
+      </div>
+    </article>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="page">
+    <ul class="footer__links">
+      <li><a href="mailto:you@university.edu">Email</a></li>
+      <li><a href="../../../courses.html">All courses</a></li>
+      <li><a href="https://github.com/yourusername">GitHub</a></li>
+    </ul>
+    <p class="footer__note">© 2026 [Your Name].</p>
+  </div>
+</footer>
+<button class="back-to-top" data-back-to-top aria-label="Back to top">↑</button>
+
+<script src="../../../assets/js/main.js"></script>
+</body>
+</html>

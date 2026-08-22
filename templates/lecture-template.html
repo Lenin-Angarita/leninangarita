@@ -1,0 +1,115 @@
+<!--
+  LECTURE TEMPLATE
+  ================
+  1. Copy this file to: courses/<course-slug>/lectures/lecture-NN.html
+  2. Replace [placeholders]. Add one <li> per heading to the TOC — the
+     href must match the heading's id exactly.
+  3. Available content blocks (copy from lecture-01.html for exact markup):
+       - Theorem-like box:   <div class="math-box math-box--theorem">
+       - Definition box:     <div class="math-box math-box--definition">
+       - Example box:        <div class="math-box math-box--example">
+       - Remark:              <div class="math-box math-box--remark">
+       - Collapsible proof:  <details class="proof"><summary>Proof</summary>...
+       - Numbered equation:  <div class="eq-block"> ... <span class="eq-block__num">
+       - Two-tab comparison: <div class="tabs"> ... (see lecture-01.html)
+  4. Math: write LaTeX exactly as normal, wrapped in \( \) for inline or
+     \[ \] for display — MathJax (loaded in <head>) renders it. No manual
+     conversion of the math itself is needed.
+  5. Add this lecture to its course's index.html lecture list, and (if it's
+     not the first lecture) add a "Previous" link in the previous lecture's
+     lecture-nav footer.
+
+  Paths here assume three levels of depth: courses/<slug>/lectures/file.html
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lecture N: [Title] — [Course Name]</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=STIX+Two+Text:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../assets/css/style.css">
+
+<script>
+  window.MathJax = {
+    tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']], tags: 'none' },
+    svg: { fontCache: 'global' }
+  };
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js" id="MathJax-script" async></script>
+</head>
+<body>
+
+<header class="site-header">
+  <nav class="nav">
+    <a class="nav__brand" href="../../../index.html">[Your Name]</a>
+    <button class="hamburger" data-nav-toggle aria-label="Open menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav__links" data-nav-links>
+      <li><a href="../../../index.html">Profile</a></li>
+      <li><a href="../../../research.html">Research</a></li>
+      <li><a href="../../../courses.html" aria-current="page">Teaching</a></li>
+    </ul>
+    <div class="nav__right">
+      <button class="theme-toggle" data-theme-toggle aria-label="Toggle dark mode">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"/></svg>
+      </button>
+    </div>
+  </nav>
+</header>
+
+<main>
+  <div class="lecture-layout" style="padding-top:2.4rem;">
+
+    <nav class="toc" aria-label="Table of contents">
+      <div class="toc__label">On this page</div>
+      <ol>
+        <li><a href="#section-one">[Heading 1]</a></li>
+        <li><a href="#section-two">[Heading 2]</a></li>
+      </ol>
+    </nav>
+
+    <article class="prose">
+      <div class="breadcrumb">
+        <a href="../../../courses.html">Teaching</a> <span>/</span>
+        <a href="../index.html">[Course Name]</a> <span>/</span> <span>Lecture N</span>
+      </div>
+
+      <div class="lecture-header">
+        <span class="eyebrow">[Course Name] · Lecture N</span>
+        <h1>[Lecture Title]</h1>
+        <div class="lecture-meta">[Term] · [Date]</div>
+      </div>
+
+      <h2 id="section-one">[Heading 1]</h2>
+      <p>[Content. Wrap inline math like \(x^2 + y^2 = r^2\) directly in the prose.]</p>
+
+      <h2 id="section-two">[Heading 2]</h2>
+      <p>[More content.]</p>
+
+      <div class="lecture-nav">
+        <a href="../lecture-PREV.html">&larr; <span>Previous</span> [Previous lecture title]</a>
+        <a href="../lecture-NEXT.html" style="text-align:right;"><span>Next</span> [Next lecture title] &rarr;</a>
+      </div>
+    </article>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="page">
+    <ul class="footer__links">
+      <li><a href="mailto:you@university.edu">Email</a></li>
+      <li><a href="../../../courses.html">All courses</a></li>
+    </ul>
+    <p class="footer__note">© 2026 [Your Name].</p>
+  </div>
+</footer>
+<button class="back-to-top" data-back-to-top aria-label="Back to top">↑</button>
+
+<script src="../../../assets/js/main.js"></script>
+</body>
+</html>
