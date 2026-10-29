@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Hawaiian Earring VS a Bouquet with Countably Many Petals - Lenin Angarita</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=STIX+Two+Text:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/style.css">
+<style>
+/* ---------- visor del póster (zoom con dedos, rueda del mouse y arrastre) ---------- */
+.poster-card{
+  border:1px solid var(--rule); border-radius:var(--radius-md);
+  background:var(--surface); overflow:hidden; margin:1.4rem 0 1rem;
+  box-shadow:var(--shadow-sm);
+  display:flex; flex-direction:column;
+}
+.poster-toolbar{
+  display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:.6rem;
+  padding:.65rem .8rem; border-bottom:1px solid var(--rule); background:var(--paper-alt);
+}
+.poster-toolbar .group{ display:flex; flex-wrap:wrap; align-items:center; gap:.45rem; }
+.poster-toolbar .btn{ min-width:2.4em; justify-content:center; }
+.poster-zoom{ font-family:"JetBrains Mono", monospace; font-size:.75rem; color:var(--ink-muted); min-width:4.5em; text-align:center; }
+.poster-viewer{
+  position:relative; overflow:hidden; height:min(85vh, 1100px);
+  background:var(--paper-alt); touch-action:none; cursor:grab;
+  -webkit-user-select:none; user-select:none;
+}
+.poster-viewer.dragging{ cursor:grabbing; }
+.poster-viewer:focus-visible{ outline:2px solid var(--teal); outline-offset:-2px; }
+.poster-viewer canvas{ position:absolute; left:0; top:0; transform-origin:0 0; pointer-events:none; }
+.poster-base{ background:#fff; box-shadow:0 2px 14px rgba(27,36,48,.2); }
+.poster-msg{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; margin:0;
+  font-family:"JetBrains Mono", monospace; font-size:.8rem; color:var(--ink-muted); }
+.poster-fallback{ width:100%; height:100%; border:0; background:#fff; }
+.poster-hint{ font-family:"Inter", sans-serif; font-size:.82rem; color:var(--ink-faint); margin:0 0 3rem; }
+
+/* pantalla completa (por CSS, para que funcione también en iPhone) */
+.poster-card.expanded{
+  position:fixed; inset:0; z-index:100; margin:0; border-radius:0; border:none;
+}
+.poster-card.expanded .poster-viewer{ flex:1; height:auto; }
+body.poster-expanded{ overflow:hidden; }
+
+@media (max-width:560px){
+  .poster-viewer{ height:68vh; }
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <nav class="nav">
+    <a class="nav__brand" href="../index.html">Lenin Angarita</a>
+    <button class="hamburger" data-nav-toggle aria-label="Open menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav__links" data-nav-links>
+      <li><a href="../index.html">Profile</a></li>
+      <li><a href="../research.html" aria-current="page">Research</a></li>
+      <li><a href="../courses.html">Teaching</a></li>
+    </ul>
+    <div class="nav__right">
+      <button class="theme-toggle" data-theme-toggle aria-label="Toggle dark mode">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"/></svg>
+      </button>
+    </div>
+  </nav>
+</header>
+
+<main class="page">
+  <div class="prose" style="max-width:1000px;">
+    <div class="breadcrumb" style="padding-top:1.2rem;">
+      <a href="../research.html">Research</a> <span>/</span> <span>Poster · ECOGYT 2026</span>
+    </div>
+
+    <span class="eyebrow" style="display:block; margin-top:1rem;">Poster · ECOGYT 2026</span>
+    <h1 style="margin-top:.4rem;">The Hawaiian Earring VS a Bouquet with Countably Many Petals</h1>
+    <p style="color:var(--ink-muted);">
+      Visually very similar, mathematically very different. A bibliographic survey on whether
+      the bouquet with countably many petals can be a CW approximation of the Hawaiian earring.
+    </p>
+
+    <div class="poster-card" id="posterCard" data-src="hawaiian-earring-ecogyt-2026.pdf">
+      <div class="poster-toolbar">
+        <div class="group">
+          <button type="button" class="btn btn--sm" id="posterZoomOut" aria-label="Zoom out">&minus;</button>
+          <span class="poster-zoom" id="posterZoomLabel" aria-live="polite">100%</span>
+          <button type="button" class="btn btn--sm" id="posterZoomIn" aria-label="Zoom in">+</button>
+          <button type="button" class="btn btn--sm" id="posterFit">Fit</button>
+          <button type="button" class="btn btn--sm" id="posterExpand" aria-pressed="false">Full screen</button>
+        </div>
+        <div class="group">
+          <a class="btn btn--sm" href="hawaiian-earring-ecogyt-2026.pdf" target="_blank" rel="noopener">Open in new tab</a>
+          <a class="btn btn--sm btn--accent" href="hawaiian-earring-ecogyt-2026.pdf" download="Hawaiian-Earring-Poster-ECOGYT-2026.pdf">Download</a>
+        </div>
+      </div>
+      <div class="poster-viewer" id="posterViewer" tabindex="0"
+           aria-label="Poster: The Hawaiian Earring VS a Bouquet with Countably Many Petals. Use + and - to zoom and the arrow keys to move.">
+        <p class="poster-msg">Loading poster…</p>
+      </div>
+    </div>
+    <p class="poster-hint">Pinch or use the mouse wheel to zoom · drag to move · double-click or double-tap to zoom in.</p>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="page">
+    <ul class="footer__links">
+      <li><a href="mailto:ldangaritar@unal.edu.co">Email</a></li>
+      <li><a href="https://scienti.minciencias.gov.co/cvlac/visualizador/generarCurriculoCv.do?cod_rh=0001773256">CVLAC</a></li>
+    </ul>
+    <p class="footer__note">© 2026 Lenin Angarita.</p>
+  </div>
+</footer>
+<button class="back-to-top" data-back-to-top aria-label="Back to top">↑</button>
+
+<script src="../assets/js/main.js"></script>
+<script>
+/* ---------- visor del póster (PDF.js) ----------
+   Una copia de baja resolución del póster se mueve y escala con CSS durante los gestos
+   (fluido); al terminar, se dibuja nítida solo la zona visible, a la resolución exacta. */
+(function(){
+  var card = document.getElementById('posterCard');
+  var viewer = document.getElementById('posterViewer');
+  var src = card.getAttribute('data-src');
+  var PDFJS = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/';
+  var BASE_PIXELS = 6e6;        /* tamaño de la copia de baja resolución */
+  var MAX_ZOOM = 12;            /* respecto a "ajustar" */
+  var zoomLabel = document.getElementById('posterZoomLabel');
+
+  var page = null, pw = 0, ph = 0;          /* tamaño del póster en puntos PDF */
+  var base = null, baseW = 0;               /* canvas de baja resolución y su ancho en px */
+  var sharp = null, sharpState = null;      /* canvas nítido y el estado con que se dibujó */
+  var s = 1, tx = 0, ty = 0;                /* escala (px por punto) y posición del póster */
+  var fit = 1, renderTask = null, renderTimer = null, gen = 0;
+
+  function fallback(){
+    viewer.innerHTML = '<iframe class="poster-fallback" src="' + src + '" title="Poster (PDF)"></iframe>';
+    ['posterZoomOut','posterZoomIn','posterFit'].forEach(function(id){ document.getElementById(id).hidden = true; });
+    zoomLabel.hidden = true;
+  }
+
+  function size(){ return { w: viewer.clientWidth, h: viewer.clientHeight }; }
+
+  function clamp(){
+    var v = size(), w = pw * s, h = ph * s;
+    tx = w <= v.w ? (v.w - w) / 2 : Math.min(0, Math.max(v.w - w, tx));
+    ty = h <= v.h ? (v.h - h) / 2 : Math.min(0, Math.max(v.h - h, ty));
+  }
+
+  function apply(){
+    clamp();
+    var k = (s * pw) / baseW;
+    base.style.transform = 'translate(' + tx + 'px,' + ty + 'px) scale(' + k + ')';
+    if(sharpState){
+      var r = s / sharpState.s;
+      sharp.style.transform = 'translate(' + (tx - r * sharpState.tx) + 'px,' + (ty - r * sharpState.ty) + 'px) scale(' + r + ')';
+    }
+    zoomLabel.textContent = Math.round((s / fit) * 100) + '%';
+    clearTimeout(renderTimer);
+    renderTimer = setTimeout(renderSharp, 160);
+  }
+
+  /* zoom manteniendo fijo el punto (cx, cy) de la pantalla */
+  function zoomAt(newS, cx, cy){
+    newS = Math.max(fit, Math.min(fit * MAX_ZOOM, newS));
+    var px = (cx - tx) / s, py = (cy - ty) / s;
+    s = newS; tx = cx - px * s; ty = cy - py * s;
+    apply();
+  }
+  function zoomCenter(f){ var v = size(); zoomAt(s * f, v.w / 2, v.h / 2); }
+
+  function fitView(){
+    var v = size();
+    fit = Math.min(v.w / pw, v.h / ph);
+    s = fit; tx = 0; ty = 0;
+    apply();
+  }
+
+  function renderSharp(){
+    if(!page) return;
+    var my = ++gen;
+    if(renderTask){ try{ renderTask.cancel(); }catch(e){} }
+    var v = size(), dpr = window.devicePixelRatio || 1;
+    var state = { s: s, tx: tx, ty: ty };
+    var off = document.createElement('canvas');
+    off.width = Math.ceil(v.w * dpr); off.height = Math.ceil(v.h * dpr);
+    renderTask = page.render({
+      canvasContext: off.getContext('2d'),
+      viewport: page.getViewport({ scale: s * dpr }),
+      transform: [1, 0, 0, 1, tx * dpr, ty * dpr],
+      background: 'rgba(0,0,0,0)'
+    });
+    renderTask.promise.then(function(){
+      if(my !== gen) return;
+      sharp.width = off.width; sharp.height = off.height;
+      sharp.style.width = v.w + 'px'; sharp.style.height = v.h + 'px';
+      var ctx = sharp.getContext('2d');
+      /* fondo blanco solo dentro del póster, para tapar la copia de baja resolución */
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(state.tx * dpr, state.ty * dpr, pw * state.s * dpr, ph * state.s * dpr);
+      ctx.drawImage(off, 0, 0);
+      sharp.style.transform = 'none';
+      sharp.hidden = false;
+      sharpState = state;
+      /* si hubo movimiento mientras se dibujaba, reubicar */
+      if(state.s !== s || state.tx !== tx || state.ty !== ty) apply();
+    }).catch(function(){ /* render cancelado */ });
+  }
+
+  /* ---------- gestos: arrastre y pellizco (pointer events) ---------- */
+  var pointers = new Map(), last = null, lastTap = 0, lastTapPos = null;
+
+  function gesture(){
+    var pts = Array.from(pointers.values());
+    if(pts.length === 1) return { x: pts[0].x, y: pts[0].y, d: 0 };
+    var a = pts[0], b = pts[1];
+    return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, d: Math.hypot(a.x - b.x, a.y - b.y) };
+  }
+  function local(e){ var r = viewer.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
+
+  viewer.addEventListener('pointerdown', function(e){
+    if(!page) return;
+    try{ viewer.setPointerCapture(e.pointerId); }catch(err){}
+    pointers.set(e.pointerId, local(e));
+    last = gesture();
+    viewer.classList.add('dragging');
+    if(e.pointerType === 'touch' && pointers.size === 1){
+      var now = Date.now(), p = local(e);
+      if(now - lastTap < 300 && lastTapPos && Math.hypot(p.x - lastTapPos.x, p.y - lastTapPos.y) < 30){
+        zoomAt(s * 2, p.x, p.y); lastTap = 0;
+      } else { lastTap = now; lastTapPos = p; }
+    }
+  });
+  viewer.addEventListener('pointermove', function(e){
+    if(!pointers.has(e.pointerId)) return;
+    pointers.set(e.pointerId, local(e));
+    var g = gesture();
+    if(last && pointers.size > 1 && last.d > 0 && g.d > 0){
+      /* pellizco: escalar alrededor del punto medio y seguir su movimiento */
+      var newS = Math.max(fit, Math.min(fit * MAX_ZOOM, s * g.d / last.d));
+      var px = (last.x - tx) / s, py = (last.y - ty) / s;
+      s = newS; tx = g.x - px * s; ty = g.y - py * s;
+    } else if(last){
+      tx += g.x - last.x; ty += g.y - last.y;
+    }
+    last = g;
+    apply();
+  });
+  function up(e){
+    pointers.delete(e.pointerId);
+    last = pointers.size ? gesture() : null;
+    if(!pointers.size) viewer.classList.remove('dragging');
+  }
+  viewer.addEventListener('pointerup', up);
+  viewer.addEventListener('pointercancel', up);
+
+  /* ---------- rueda del mouse / pellizco del trackpad ---------- */
+  viewer.addEventListener('wheel', function(e){
+    if(!page) return;
+    e.preventDefault();
+    var dy = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaMode === 2 ? e.deltaY * 400 : e.deltaY;
+    var p = local(e);
+    zoomAt(s * Math.exp(-dy * (e.ctrlKey ? 0.01 : 0.0018)), p.x, p.y);
+  }, { passive:false });
+
+  viewer.addEventListener('dblclick', function(e){
+    if(!page) return;
+    var p = local(e);
+    zoomAt(s * 2, p.x, p.y);
+  });
+
+  /* ---------- teclado ---------- */
+  viewer.addEventListener('keydown', function(e){
+    if(!page) return;
+    var step = 60, handled = true;
+    if(e.key === '+' || e.key === '=') zoomCenter(1.4);
+    else if(e.key === '-' || e.key === '_') zoomCenter(1 / 1.4);
+    else if(e.key === '0') fitView();
+    else if(e.key === 'ArrowLeft'){ tx += step; apply(); }
+    else if(e.key === 'ArrowRight'){ tx -= step; apply(); }
+    else if(e.key === 'ArrowUp'){ ty += step; apply(); }
+    else if(e.key === 'ArrowDown'){ ty -= step; apply(); }
+    else handled = false;
+    if(handled) e.preventDefault();
+  });
+
+  /* ---------- botones ---------- */
+  document.getElementById('posterZoomIn').addEventListener('click', function(){ zoomCenter(1.5); });
+  document.getElementById('posterZoomOut').addEventListener('click', function(){ zoomCenter(1 / 1.5); });
+  document.getElementById('posterFit').addEventListener('click', fitView);
+
+  var expandBtn = document.getElementById('posterExpand');
+  function setExpanded(on){
+    card.classList.toggle('expanded', on);
+    document.body.classList.toggle('poster-expanded', on);
+    expandBtn.textContent = on ? 'Exit full screen' : 'Full screen';
+    expandBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    if(page) relayout();
+    viewer.focus();
+  }
+  expandBtn.addEventListener('click', function(){ setExpanded(!card.classList.contains('expanded')); });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && card.classList.contains('expanded')) setExpanded(false);
+  });
+
+  /* al cambiar el tamaño del visor se conserva el punto central y el nivel de zoom */
+  function relayout(){
+    var v = size(), rel = s / fit;
+    var cx = (viewer._lastW / 2 - tx) / s, cy = (viewer._lastH / 2 - ty) / s;
+    fit = Math.min(v.w / pw, v.h / ph);
+    s = fit * rel;
+    tx = v.w / 2 - cx * s; ty = v.h / 2 - cy * s;
+    viewer._lastW = v.w; viewer._lastH = v.h;
+    apply();
+  }
+  var resizeTimer;
+  window.addEventListener('resize', function(){
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function(){ if(page) relayout(); }, 150);
+  });
+
+  /* ---------- carga ---------- */
+  function start(){
+    var lib = window.pdfjsLib;
+    if(!lib){ fallback(); return; }
+    lib.GlobalWorkerOptions.workerSrc = PDFJS + 'pdf.worker.min.js';
+    lib.getDocument(src).promise.then(function(doc){ return doc.getPage(1); }).then(function(p){
+      var vp1 = p.getViewport({ scale: 1 });
+      pw = vp1.width; ph = vp1.height;
+      var bs = Math.sqrt(BASE_PIXELS / (pw * ph));
+      var vp = p.getViewport({ scale: bs });
+      base = document.createElement('canvas');
+      base.className = 'poster-base';
+      base.width = Math.floor(vp.width); base.height = Math.floor(vp.height);
+      base.style.width = base.width + 'px'; base.style.height = base.height + 'px';
+      baseW = base.width;
+      sharp = document.createElement('canvas');
+      sharp.hidden = true;
+      return p.render({ canvasContext: base.getContext('2d'), viewport: vp }).promise.then(function(){
+        page = p;
+        viewer.innerHTML = '';
+        viewer.appendChild(base);
+        viewer.appendChild(sharp);
+        var v = size();
+        viewer._lastW = v.w; viewer._lastH = v.h;
+        fitView();
+      });
+    }).catch(fallback);
+  }
+
+  var script = document.createElement('script');
+  script.src = PDFJS + 'pdf.min.js';
+  script.onload = start;
+  script.onerror = fallback;
+  document.head.appendChild(script);
+})();
+</script>
+</body>
+</html>

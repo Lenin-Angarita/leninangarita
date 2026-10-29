@@ -188,6 +188,8 @@ html[data-theme="dark"] .btn--accent{ color:var(--wine); }
   padding: .3em .75em; border-radius: 999px;
   border: 1px solid var(--rule); color: var(--ink-muted); background: var(--surface);
 }
+a.tag{ transition: border-color .15s, color .15s; }
+a.tag:hover{ border-color: var(--teal); color: var(--teal); text-decoration:none; }
 
 /* ---------- Hero (home) — the "Definition" motif ---------- */
 .hero{
