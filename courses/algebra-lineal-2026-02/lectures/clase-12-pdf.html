@@ -61,6 +61,17 @@
 .pdf-card{ scroll-margin-top:5rem; }
 .lecture-pager{ display:flex; justify-content:space-between; gap:.7rem; flex-wrap:wrap; margin:0 0 3rem; }
 .lecture-pager .btn:only-child{ margin-left:auto; }
+
+/* pantalla completa (por CSS, para que funcione también en iPhone) */
+.pdf-card.expanded{
+  position:fixed; inset:0; z-index:100; margin:0; border-radius:0; border:none;
+  display:flex; flex-direction:column;
+}
+.pdf-card.expanded .pdf-viewer{ flex:1; height:auto; }
+body.pdf-expanded{ overflow:hidden; }
+@media (max-width:560px){
+  .pdf-card.expanded .pdf-toolbar .pdf-group:last-child{ display:none; }
+}
 </style>
 </head>
 <body>
@@ -112,6 +123,7 @@
           <span class="pdf-status" id="pdfZoomLabel">Ajustar</span>
           <button type="button" class="btn btn--sm" id="pdfZoomIn" aria-label="Acercar">+</button>
           <span class="pdf-status" id="pdfPageLabel" aria-live="polite"></span>
+          <button type="button" class="btn btn--sm" id="pdfExpand" aria-pressed="false">Pantalla completa</button>
         </div>
         <div class="pdf-group">
           <a class="btn btn--sm" href="../pdf/clase-12.pdf" target="_blank" rel="noopener">Abrir en pestaña nueva</a>
@@ -258,6 +270,20 @@
       card.scrollIntoView({ behavior:'smooth', block:'start' });
       viewer.scrollTo({ top: p.canvas.offsetTop - 8, behavior:'smooth' });
     });
+  });
+  /* ---------- pantalla completa ---------- */
+  var expandBtn = document.getElementById('pdfExpand');
+  function setExpanded(on){
+    card.classList.toggle('expanded', on);
+    document.body.classList.toggle('pdf-expanded', on);
+    expandBtn.textContent = on ? 'Salir de pantalla completa' : 'Pantalla completa';
+    expandBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    render(); updatePageLabel();
+    viewer.focus();
+  }
+  expandBtn.addEventListener('click', function(){ setExpanded(!card.classList.contains('expanded')); });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && card.classList.contains('expanded')) setExpanded(false);
   });
 
   var resizeTimer;
