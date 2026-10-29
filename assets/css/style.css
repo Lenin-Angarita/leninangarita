@@ -165,6 +165,7 @@ html[data-theme="dark"] .theme-toggle .icon-moon{ display:block; }
 .footer__links a{ color: var(--ink-muted); font-size: .88rem; }
 .footer__links a:hover{ color: var(--ink); }
 .footer__note{ color: var(--ink-faint); font-size: .82rem; }
+.footer__ai{ flex-basis:100%; margin:0; color: var(--ink-faint); font-size: .74rem; opacity:.85; }
 
 /* ---------- Buttons ---------- */
 .btn{
