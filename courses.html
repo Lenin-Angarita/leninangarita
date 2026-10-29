@@ -48,7 +48,7 @@
         <h3>Álgebra Lineal</h3>
         <p>Espacios vectoriales, transformaciones lineales, matrices y valores/vectores propios
           - con énfasis en demostraciones rigurosas.</p>
-        <div class="card__meta">1 clase publicada</div>
+        <div class="card__meta" data-lecture-count>18 clases publicadas</div>
       </a>
 
       <!--
@@ -194,5 +194,22 @@
 <button class="back-to-top" data-back-to-top aria-label="Back to top">↑</button>
 
 <script src="assets/js/main.js"></script>
+<script>
+/* Recuento de clases: toma el número de la última "Clase N" de la página del curso.
+   Si la página no se puede leer (por ejemplo, abriendo el archivo local), queda el texto fijo. */
+document.querySelectorAll('[data-lecture-count]').forEach(function(meta){
+  var card = meta.closest('a');
+  if(!card || !window.fetch) return;
+  fetch(card.getAttribute('href')).then(function(r){ return r.ok ? r.text() : ''; }).then(function(html){
+    var doc = new DOMParser().parseFromString(html, 'text/html');
+    var max = 0;
+    doc.querySelectorAll('.lecture-row__num').forEach(function(el){
+      var m = el.textContent.match(/\d+/);
+      if(m) max = Math.max(max, +m[0]);
+    });
+    if(max) meta.textContent = max + (max === 1 ? ' clase publicada' : ' clases publicadas');
+  }).catch(function(){});
+});
+</script>
 </body>
 </html>
