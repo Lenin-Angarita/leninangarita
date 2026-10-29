@@ -477,7 +477,15 @@ ol.prop-list > li > .prop-label{
   min-width:1.6rem;
 }
 .exercise-item .ex-num::before{ content:counter(exctr) "."; }
-.exercise-item .ex-body{ flex:1 1 auto; }
+.exercise-item .ex-body{ flex:1 1 auto; min-width:0; }
+/* fórmulas largas: desplazamiento propio en vez de ensanchar la página en celular */
+mjx-container[display="true"]{ max-width:100%; overflow-x:auto; overflow-y:hidden; }
+mjx-container.mjx-wide{ display:inline-block; max-width:100%; overflow-x:auto; overflow-y:hidden; vertical-align:middle; }
+@media (max-width:560px){
+  .box{ padding:1.05rem 1rem 1.15rem; }
+  .diagram-card{ padding:.8rem .6rem .5rem; }
+  .exercise-item{ gap:.6rem; }
+}
 .exercise-item.done .ex-body{ opacity:.45; text-decoration:line-through; text-decoration-color:var(--ink-soft); }
 .exercise-item .star-badge{
   font-family:var(--font-mono); font-size:.62rem; background:var(--card); color:var(--ink-soft);
@@ -2014,6 +2022,31 @@ document.addEventListener('DOMContentLoaded', function(){
   })();
 
 });
+</script>
+
+<script>
+/* ---------- fórmulas en línea más anchas que su párrafo (celular): desplazamiento propio ---------- */
+(function(){
+  function fitWideMath(){
+    document.querySelectorAll('mjx-container:not([display="true"])').forEach(function(m){
+      m.classList.remove('mjx-wide');
+      /* se compara con el bloque contenedor más cercano (no con un <em> o <span>) */
+      var host = m.parentElement;
+      while(host && getComputedStyle(host).display.indexOf('inline') === 0) host = host.parentElement;
+      if(host && m.getBoundingClientRect().width > host.clientWidth) m.classList.add('mjx-wide');
+    });
+  }
+  function whenReady(){
+    if(window.MathJax && MathJax.startup && MathJax.startup.promise){
+      MathJax.startup.promise.then(fitWideMath);
+    } else {
+      setTimeout(whenReady, 200);
+    }
+  }
+  whenReady();
+  var t;
+  window.addEventListener('resize', function(){ clearTimeout(t); t = setTimeout(fitWideMath, 200); });
+})();
 </script>
 
 </body>

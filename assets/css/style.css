@@ -108,7 +108,7 @@ code{ background: var(--paper-alt); padding: .1em .35em; border-radius: 4px; fon
   font-family: "Inter", sans-serif; font-size: .72rem; font-weight: 600;
   letter-spacing: .12em; text-transform: uppercase; color: var(--ink-faint);
 }
-.section{ padding: 3.2rem 0; }
+.section{ padding-top: 3.2rem; padding-bottom: 3.2rem; }   /* sin tocar el margen lateral de .page */
 .section + .section{ border-top: 1px solid var(--rule); }
 
 /* ---------- Header / nav ---------- */
@@ -195,7 +195,7 @@ a.tag:hover{ border-color: var(--teal); color: var(--teal); text-decoration:none
 
 /* ---------- Hero (home) — the "Definition" motif ---------- */
 .hero{
-  padding: 3.6rem 0 2rem;
+  padding-top: 3.6rem; padding-bottom: 2rem;   /* sin tocar el margen lateral de .page */
   animation: rise .6s ease both;
 }
 @keyframes rise{ from{ opacity:0; transform: translateY(10px);} to{opacity:1; transform:none;} }
@@ -418,6 +418,8 @@ details.proof .proof__body{ padding: 0 1.4rem 1.3rem; }
 @media (max-width: 720px){
   .hero__grid{ grid-template-columns: 1fr; }
   .hero__portrait{ width:96px; height:96px; }
+  .hero{ padding-top: 2.2rem; }
+  .def-box{ padding: 1.2rem 1.25rem; }
   .nav__links{
     position:absolute; top:100%; left:0; right:0; background: var(--paper);
     flex-direction:column; align-items:flex-start; gap:0; padding: .5rem 1.5rem 1rem;
