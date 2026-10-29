@@ -38,6 +38,29 @@
   .pdf-viewer{ height:75vh; padding:.5rem; }
   .pdf-page{ margin-bottom:.5rem; }
 }
+
+/* ---------- contenido de la clase ---------- */
+.lecture-contents{
+  border:1px solid var(--rule); border-radius:var(--radius-md); background:var(--surface);
+  padding:1rem 1.2rem 1.1rem; margin:1.2rem 0 0;
+}
+.lecture-contents h2{
+  font-family:"Inter", sans-serif; font-size:.72rem; font-weight:600; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--ink-faint); margin:0 0 .5rem;
+}
+.lecture-contents ol{ list-style:none; margin:0; padding:0; }
+.lecture-contents li a{
+  display:flex; align-items:baseline; gap:.8rem; padding:.3rem 0; color:var(--ink);
+  border-top:1px dashed var(--rule);
+}
+.lecture-contents li:first-child a{ border-top:none; }
+.lecture-contents li a:hover{ color:var(--teal); text-decoration:none; }
+.toc-num{ font-family:"JetBrains Mono", monospace; font-size:.8rem; color:var(--ink-faint); width:3.6em; flex-shrink:0; }
+.toc-title{ flex:1; }
+.toc-page{ font-family:"JetBrains Mono", monospace; font-size:.72rem; color:var(--ink-faint); white-space:nowrap; }
+.pdf-card{ scroll-margin-top:5rem; }
+.lecture-pager{ display:flex; justify-content:space-between; gap:.7rem; flex-wrap:wrap; margin:0 0 3rem; }
+.lecture-pager .btn:only-child{ margin-left:auto; }
 </style>
 </head>
 <body>
@@ -71,10 +94,19 @@
 
     <h1 style="margin-top:.4rem;">Clase 1 - Vectores geométricos y algebraicos</h1>
     <p style="color:var(--ink-muted);">
-      Notas de clase en PDF (Unidad 0, versión 1.2): vectores en ℝ², ℝ³ y ℝⁿ, norma,
-      producto punto, distancia, ángulos y ejercicios. También está disponible la
+      Notas de clase en PDF · Unidad 0. También está disponible la
       <a href="clase-01.html">versión interactiva de la Clase 1</a>.
     </p>
+
+    <nav class="lecture-contents" aria-label="Contenido de la clase 1">
+      <h2>Contenido</h2>
+      <ol>
+        <li><a href="../pdf/clase-01.pdf#page=1" data-pdf-page="1"><span class="toc-num">0.1</span><span class="toc-title">Vectores en ℝ², ℝ³ y en ℝⁿ</span><span class="toc-page">pág. 1</span></a></li>
+        <li><a href="../pdf/clase-01.pdf#page=4" data-pdf-page="4"><span class="toc-num">0.2</span><span class="toc-title">Norma, producto punto</span><span class="toc-page">pág. 4</span></a></li>
+        <li><a href="../pdf/clase-01.pdf#page=5" data-pdf-page="5"><span class="toc-num">0.3</span><span class="toc-title">Propiedades - Distancia y Ángulos</span><span class="toc-page">pág. 5</span></a></li>
+        <li><a href="../pdf/clase-01.pdf#page=6" data-pdf-page="6"><span class="toc-num">Ej.</span><span class="toc-title">Ejercicios - Clase 1</span><span class="toc-page">pág. 6</span></a></li>
+      </ol>
+    </nav>
 
     <div class="pdf-card" id="pdfCard" data-src="../pdf/clase-01.pdf">
       <div class="pdf-toolbar">
@@ -93,6 +125,10 @@
         <p class="pdf-msg">Cargando PDF…</p>
       </div>
     </div>
+
+    <nav class="lecture-pager" aria-label="Otras clases">
+      <a class="btn btn--sm" href="clase-02-pdf.html">Clase 2 &rarr;</a>
+    </nav>
   </div>
 </main>
 
@@ -214,6 +250,17 @@
     if(zoomIdx > 0){ zoomIdx--; render(); updatePageLabel(); }
   });
   viewer.addEventListener('scroll', updatePageLabel, { passive:true });
+
+  /* ---------- contenido: saltar a la página del PDF ---------- */
+  Array.prototype.forEach.call(document.querySelectorAll('[data-pdf-page]'), function(link){
+    link.addEventListener('click', function(e){
+      var p = pages[+link.getAttribute('data-pdf-page') - 1];
+      if(!p) return;            /* sin PDF.js: el enlace abre el PDF en esa página */
+      e.preventDefault();
+      card.scrollIntoView({ behavior:'smooth', block:'start' });
+      viewer.scrollTo({ top: p.canvas.offsetTop - 8, behavior:'smooth' });
+    });
+  });
 
   var resizeTimer;
   window.addEventListener('resize', function(){

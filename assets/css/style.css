@@ -257,6 +257,9 @@ html[data-theme="dark"] .btn--accent{ color:var(--wine); }
 .lecture-row__num{ font-family:"JetBrains Mono", monospace; color: var(--ink-faint); font-size: .85rem; width: 4.2em; flex-shrink:0; }
 .lecture-row__body a{ color: var(--ink); font-weight: 600; }
 .lecture-row__desc{ color: var(--ink-muted); font-size: .92rem; margin-top:.15em; }
+.lecture-toc{ list-style:none; padding:0; margin:.35em 0 0; }
+.lecture-toc li{ display:flex; gap:.6em; line-height:1.5; }
+.lecture-toc__num{ font-family:"JetBrains Mono", monospace; font-size:.78rem; color: var(--ink-faint); width:2.6em; flex-shrink:0; padding-top:.1em; }
 
 /* ---------- Paper / publication list ---------- */
 .paper{ padding: 1.3rem 0; border-top: 1px solid var(--rule); }
