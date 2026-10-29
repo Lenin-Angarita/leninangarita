@@ -45,10 +45,10 @@
     <h2 style="margin-top:.6rem;">Current</h2>
     <div class="card-grid">
       <a class="card card--link" href="courses/algebra-lineal-2026-02/index.html">
-        <h3>Álgebra Lineal</h3>
-        <p>Espacios vectoriales, transformaciones lineales, matrices y valores/vectores propios
-          - con énfasis en demostraciones rigurosas.</p>
-        <div class="card__meta" data-lecture-count>18 clases publicadas</div>
+        <h3>Linear Algebra <span style="font-weight:400; color:var(--ink-muted);">(in Spanish)</span></h3>
+        <p>Vector spaces, linear transformations, matrices and eigenvalues/eigenvectors - with an
+          emphasis on rigorous proofs.</p>
+        <div class="card__meta" data-lecture-count>18 lectures published</div>
       </a>
 
       <!--
@@ -208,7 +208,7 @@ document.querySelectorAll('[data-lecture-count]').forEach(function(meta){
       var m = el.textContent.match(/\d+/);
       if(m) max = Math.max(max, +m[0]);
     });
-    if(max) meta.textContent = max + (max === 1 ? ' clase publicada' : ' clases publicadas');
+    if(max) meta.textContent = max + (max === 1 ? ' lecture published' : ' lectures published');
   }).catch(function(){});
 });
 </script>
