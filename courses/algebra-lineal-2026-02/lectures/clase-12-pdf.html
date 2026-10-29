@@ -22,11 +22,30 @@
 .pdf-toolbar .pdf-group{ display:flex; flex-wrap:wrap; align-items:center; gap:.45rem; }
 .pdf-toolbar .btn{ min-width:2.4em; justify-content:center; }
 .pdf-status{ font-family:"JetBrains Mono", monospace; font-size:.75rem; color:var(--ink-muted); min-width:6.5em; text-align:center; }
+.pdf-stage{ position:relative; }
 .pdf-viewer{
-  height:min(82vh, 1100px); overflow:auto; padding:1rem;
+  height:min(82vh, 1100px); overflow:auto; padding:1rem 1.4rem 1rem 1rem;
   background:var(--paper-alt);
   -webkit-overflow-scrolling:touch;
+  touch-action:pan-x pan-y;            /* el pellizco lo maneja el visor, no el navegador */
+  cursor:grab; scrollbar-width:none;
 }
+.pdf-viewer::-webkit-scrollbar{ display:none; }
+.pdf-viewer.dragging{ cursor:grabbing; }
+.pdf-viewer:focus-visible{ outline:2px solid var(--teal); outline-offset:-2px; }
+/* barra lateral semitransparente: la rueda del mouse aquí baja en vez de hacer zoom */
+.pdf-vbar{
+  position:absolute; top:6px; bottom:6px; right:4px; width:12px; z-index:2;
+  border-radius:999px; background:color-mix(in srgb, var(--ink) 12%, transparent);
+  opacity:.35; transition:opacity .2s; touch-action:none; cursor:pointer;
+}
+.pdf-vbar:hover, .pdf-vbar.active{ opacity:.9; }
+.pdf-vbar__thumb{
+  position:absolute; left:2px; right:2px; top:0; border-radius:999px;
+  background:color-mix(in srgb, var(--ink) 55%, transparent); cursor:grab;
+}
+.pdf-vbar.active .pdf-vbar__thumb{ cursor:grabbing; }
+.pdf-hint{ font-family:"Inter", sans-serif; font-size:.8rem; color:var(--ink-faint); margin:-1.4rem 0 2rem; }
 .pdf-page{
   display:block; margin:0 auto 1rem; background:#fff;
   box-shadow:0 2px 10px rgba(27,36,48,.18); border-radius:2px;
@@ -35,7 +54,7 @@
 .pdf-fallback{ width:100%; height:100%; border:0; background:#fff; }
 .pdf-msg{ font-family:"JetBrains Mono", monospace; font-size:.8rem; color:var(--ink-muted); text-align:center; padding:2rem 1rem; margin:0; }
 @media (max-width:560px){
-  .pdf-viewer{ height:75vh; padding:.5rem; }
+  .pdf-viewer{ height:75vh; padding:.5rem 1.2rem .5rem .5rem; }
   .pdf-page{ margin-bottom:.5rem; }
 }
 
@@ -67,7 +86,9 @@
   position:fixed; inset:0; z-index:100; margin:0; border-radius:0; border:none;
   display:flex; flex-direction:column;
 }
-.pdf-card.expanded .pdf-viewer{ flex:1; height:auto; }
+.pdf-card.expanded .pdf-stage{ flex:1; min-height:0; }
+.pdf-card.expanded .pdf-viewer{ height:100%; }
+.pdf-card.expanded + .pdf-hint{ display:none; }
 body.pdf-expanded{ overflow:hidden; }
 @media (max-width:560px){
   .pdf-card.expanded .pdf-toolbar .pdf-group:last-child{ display:none; }
@@ -130,10 +151,14 @@ body.pdf-expanded{ overflow:hidden; }
           <a class="btn btn--sm btn--accent" href="../pdf/clase-12.pdf" download="Clase-12-Calculo-de-determinantes.pdf">Descargar</a>
         </div>
       </div>
-      <div class="pdf-viewer" id="pdfViewer" tabindex="0" aria-label="Notas de la Clase 12 en PDF">
-        <p class="pdf-msg">Cargando PDF…</p>
+      <div class="pdf-stage">
+        <div class="pdf-viewer" id="pdfViewer" tabindex="0" aria-label="Notas de la Clase 12 en PDF. Usa + y - para hacer zoom.">
+          <p class="pdf-msg">Cargando PDF…</p>
+        </div>
+        <div class="pdf-vbar" id="pdfBar" hidden><div class="pdf-vbar__thumb" id="pdfThumb"></div></div>
       </div>
     </div>
+    <p class="pdf-hint">Zoom: rueda del mouse o pellizco · arrastra para moverte · para bajar con la rueda, usa la barra lateral derecha.</p>
 
     <nav class="lecture-pager" aria-label="Otras clases">
       <a class="btn btn--sm" href="clase-11-pdf.html">&larr; Clase 11</a>
@@ -155,19 +180,26 @@ body.pdf-expanded{ overflow:hidden; }
 
 <script src="../../../assets/js/main.js"></script>
 <script>
-/* ---------- visor del PDF (PDF.js) ---------- */
+/* ---------- visor del PDF (PDF.js) ----------
+   Zoom con la rueda del mouse, pellizco o botones; arrastrar mueve el documento.
+   La barra lateral derecha sirve para bajar con la rueda sin hacer zoom.
+   Mientras se hace zoom las páginas se estiran (rápido) y al terminar se dibujan
+   nítidas, primero las visibles; las lejanas quedan en baja resolución. */
 (function(){
   var card = document.getElementById('pdfCard');
   var viewer = document.getElementById('pdfViewer');
   if(!card || !viewer) return;
   var src = card.getAttribute('data-src');
   var PDFJS = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/';
-  var zoomLevels = [0.5, 0.75, 1, 1.25, 1.5, 2, 2.5, 3];
-  var zoomIdx = 2;              /* 1 = ajustar al ancho del visor */
-  var MAX_PIXELS = 16e6;        /* límite de píxeles por canvas (Safari iOS) */
-  var pdfDoc = null, pages = [], generation = 0, lastWidth = 0;
+  var MIN_ZOOM = 0.5, MAX_ZOOM = 4;  /* respecto a "ajustar al ancho" */
+  var NEAR_PIXELS = 16e6;            /* límite por página visible (Safari iOS) */
+  var FAR_PIXELS = 1.5e6;            /* páginas lejanas: baja resolución, poca memoria */
+  var zoom = 1;
+  var pdfDoc = null, pages = [], generation = 0, lastWidth = 0, renderTimer = null;
   var zoomLabel = document.getElementById('pdfZoomLabel');
   var pageLabel = document.getElementById('pdfPageLabel');
+  var bar = document.getElementById('pdfBar');
+  var thumb = document.getElementById('pdfThumb');
 
   function fallback(){
     /* si PDF.js no carga, se usa el visor nativo del navegador */
@@ -176,6 +208,7 @@ body.pdf-expanded{ overflow:hidden; }
     document.getElementById('pdfZoomOut').hidden = true;
     document.getElementById('pdfZoomIn').hidden = true;
     zoomLabel.hidden = true;
+    bar.hidden = true;
   }
 
   function availableWidth(){
@@ -183,42 +216,95 @@ body.pdf-expanded{ overflow:hidden; }
     return viewer.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
   }
 
-  function render(){
-    if(!pdfDoc) return;
-    var gen = ++generation;
-    var ratio = viewer.scrollHeight > 0 ? viewer.scrollTop / viewer.scrollHeight : 0;
+  /* tamaño de cada página según el zoom (sin dibujar) */
+  function layout(){
     var avail = availableWidth();
     lastWidth = viewer.clientWidth;
-    var zoom = zoomLevels[zoomIdx];
-    zoomLabel.textContent = zoom === 1 ? 'Ajustar' : Math.round(zoom * 100) + '%';
-
-    /* primero se fijan los tamaños (para conservar la posición de lectura), luego se dibuja */
+    zoomLabel.textContent = Math.abs(zoom - 1) < 0.005 ? 'Ajustar' : Math.round(zoom * 100) + '%';
     pages.forEach(function(p){
       var base = p.page.getViewport({ scale:1 });
       p.viewport = p.page.getViewport({ scale: (avail / base.width) * zoom });
       p.canvas.style.width = Math.floor(p.viewport.width) + 'px';
       p.canvas.style.height = Math.floor(p.viewport.height) + 'px';
     });
-    viewer.scrollTop = ratio * viewer.scrollHeight;
+    updateBar();
+  }
 
-    pages.reduce(function(chain, p){
+  /* dibuja las páginas cuya resolución no corresponde a la actual, empezando por las visibles */
+  function draw(){
+    if(!pdfDoc) return;
+    var gen = ++generation;
+    pages.forEach(function(p){ if(p.task){ try{ p.task.cancel(); }catch(e){} } });
+    var top = viewer.scrollTop, h = viewer.clientHeight, mid = top + h / 2;
+    var dpr = window.devicePixelRatio || 1;
+    var jobs = pages.map(function(p){
+      var a = p.canvas.offsetTop, b = a + p.canvas.offsetHeight;
+      var near = b > top - h && a < top + 2 * h;
+      var vp = p.viewport;
+      var out = Math.min(dpr, Math.sqrt((near ? NEAR_PIXELS : FAR_PIXELS) / (vp.width * vp.height)));
+      return { p:p, out:out, key: Math.floor(vp.width * out) + 'x' + Math.floor(vp.height * out), dist: Math.abs((a + b) / 2 - mid) };
+    }).filter(function(j){ return j.p.key !== j.key; })
+      .sort(function(x, y){ return x.dist - y.dist; });
+
+    jobs.reduce(function(chain, j){
       return chain.then(function(){
         if(gen !== generation) return;
-        var vp = p.viewport;
-        var dpr = window.devicePixelRatio || 1;
-        var out = Math.min(dpr, Math.sqrt(MAX_PIXELS / (vp.width * vp.height)));
-        p.canvas.width = Math.floor(vp.width * out);
-        p.canvas.height = Math.floor(vp.height * out);
-        if(p.task){ try{ p.task.cancel(); }catch(e){} }
+        var p = j.p, vp = p.viewport;
+        /* se dibuja aparte y luego se copia, para que la página no quede en blanco mientras tanto */
+        var off = document.createElement('canvas');
+        off.width = Math.floor(vp.width * j.out);
+        off.height = Math.floor(vp.height * j.out);
         p.task = p.page.render({
-          canvasContext: p.canvas.getContext('2d'),
+          canvasContext: off.getContext('2d'),
           viewport: vp,
-          transform: out !== 1 ? [out, 0, 0, out, 0, 0] : null
+          transform: j.out !== 1 ? [j.out, 0, 0, j.out, 0, 0] : null
         });
-        return p.task.promise.catch(function(){ /* render cancelado */ });
+        return p.task.promise.then(function(){
+          if(gen !== generation) return;
+          p.canvas.width = off.width;
+          p.canvas.height = off.height;
+          p.canvas.getContext('2d').drawImage(off, 0, 0);
+          p.key = j.key;
+        }).catch(function(){ /* render cancelado */ });
       });
     }, Promise.resolve());
   }
+
+  /* punto de lectura: página bajo (cx, cy) y posición relativa dentro de ella */
+  function anchorAt(cx, cy){
+    var x = viewer.scrollLeft + cx, y = viewer.scrollTop + cy;
+    var c = pages[0].canvas;
+    pages.forEach(function(p){ if(p.canvas.offsetTop <= y) c = p.canvas; });
+    return { c: c, cx: cx, cy: cy, rx: (x - c.offsetLeft) / c.offsetWidth, ry: (y - c.offsetTop) / c.offsetHeight };
+  }
+  function restore(a){
+    viewer.scrollLeft = a.c.offsetLeft + a.rx * a.c.offsetWidth - a.cx;
+    viewer.scrollTop = a.c.offsetTop + a.ry * a.c.offsetHeight - a.cy;
+  }
+
+  /* recalcula tamaños (p. ej. al cambiar el ancho) conservando el punto de lectura */
+  function render(){
+    var a = pages.length ? anchorAt(0, 0) : null;
+    layout();
+    if(a) restore(a);
+    draw();
+  }
+  function scheduleDraw(){ clearTimeout(renderTimer); renderTimer = setTimeout(draw, 180); }
+
+  /* zoom manteniendo fijo el punto (cx, cy) del visor */
+  function zoomAt(newZoom, cx, cy){
+    newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, newZoom));
+    if(!pages.length || newZoom === zoom) return;
+    var a = anchorAt(cx, cy);
+    zoom = newZoom;
+    layout();
+    restore(a);
+    updatePageLabel();
+    scheduleDraw();
+  }
+  function zoomCenter(f){ zoomAt(zoom * f, viewer.clientWidth / 2, viewer.clientHeight / 2); }
+  function local(e){ var r = viewer.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
+  function wheelDelta(e){ return e.deltaMode === 1 ? e.deltaY * 16 : e.deltaMode === 2 ? e.deltaY * viewer.clientHeight : e.deltaY; }
 
   function updatePageLabel(){
     if(!pages.length) return;
@@ -227,6 +313,104 @@ body.pdf-expanded{ overflow:hidden; }
     pages.forEach(function(p, i){ if(p.canvas.offsetTop <= mark) current = i + 1; });
     pageLabel.textContent = 'Pág. ' + current + ' / ' + pages.length;
   }
+
+  /* ---------- barra lateral ---------- */
+  function updateBar(){
+    var max = viewer.scrollHeight - viewer.clientHeight;
+    bar.hidden = !pages.length || max <= 1;
+    if(bar.hidden) return;
+    var track = bar.clientHeight;
+    var th = Math.max(36, track * viewer.clientHeight / viewer.scrollHeight);
+    thumb.style.height = th + 'px';
+    thumb.style.transform = 'translateY(' + ((track - th) * viewer.scrollTop / max) + 'px)';
+  }
+  bar.addEventListener('wheel', function(e){
+    var dy = wheelDelta(e), max = viewer.scrollHeight - viewer.clientHeight;
+    /* al llegar al inicio o al final del PDF, la rueda sigue moviendo la página web */
+    if((dy > 0 && viewer.scrollTop >= max - 1) || (dy < 0 && viewer.scrollTop <= 0)) return;
+    e.preventDefault();
+    viewer.scrollTop += dy;
+  }, { passive:false });
+  var drag = null;
+  thumb.addEventListener('pointerdown', function(e){
+    e.preventDefault(); e.stopPropagation();
+    try{ thumb.setPointerCapture(e.pointerId); }catch(err){}
+    drag = { y: e.clientY, top: viewer.scrollTop };
+    bar.classList.add('active');
+  });
+  thumb.addEventListener('pointermove', function(e){
+    if(!drag) return;
+    var max = viewer.scrollHeight - viewer.clientHeight;
+    viewer.scrollTop = drag.top + (e.clientY - drag.y) * max / Math.max(1, bar.clientHeight - thumb.offsetHeight);
+  });
+  function endDrag(){ drag = null; bar.classList.remove('active'); }
+  thumb.addEventListener('pointerup', endDrag);
+  thumb.addEventListener('pointercancel', endDrag);
+  bar.addEventListener('pointerdown', function(e){
+    if(e.target !== bar) return;
+    var r = thumb.getBoundingClientRect();
+    viewer.scrollBy({ top: (e.clientY < r.top ? -1 : 1) * viewer.clientHeight * 0.9, behavior:'smooth' });
+  });
+
+  /* ---------- rueda del mouse / pellizco del trackpad: zoom ---------- */
+  viewer.addEventListener('wheel', function(e){
+    if(!pages.length) return;
+    e.preventDefault();
+    var p = local(e);
+    zoomAt(zoom * Math.exp(-wheelDelta(e) * (e.ctrlKey ? 0.01 : 0.0018)), p.x, p.y);
+  }, { passive:false });
+
+  /* ---------- arrastrar con el mouse ---------- */
+  var pan = null;
+  viewer.addEventListener('pointerdown', function(e){
+    if(e.pointerType !== 'mouse' || e.button !== 0 || !pages.length) return;
+    pan = { x: e.clientX, y: e.clientY, l: viewer.scrollLeft, t: viewer.scrollTop };
+    try{ viewer.setPointerCapture(e.pointerId); }catch(err){}
+    viewer.classList.add('dragging');
+  });
+  viewer.addEventListener('pointermove', function(e){
+    if(!pan) return;
+    viewer.scrollLeft = pan.l - (e.clientX - pan.x);
+    viewer.scrollTop = pan.t - (e.clientY - pan.y);
+  });
+  function endPan(){ pan = null; viewer.classList.remove('dragging'); }
+  viewer.addEventListener('pointerup', endPan);
+  viewer.addEventListener('pointercancel', endPan);
+  viewer.addEventListener('dblclick', function(e){
+    var p = local(e);
+    zoomAt(zoom >= MAX_ZOOM - 0.01 ? 1 : zoom * 1.6, p.x, p.y);
+  });
+
+  /* ---------- pellizco con dos dedos ---------- */
+  var pinch = null;
+  function touchInfo(t){
+    var r = viewer.getBoundingClientRect();
+    return { d: Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY),
+             x: (t[0].clientX + t[1].clientX) / 2 - r.left, y: (t[0].clientY + t[1].clientY) / 2 - r.top };
+  }
+  viewer.addEventListener('touchstart', function(e){
+    if(e.touches.length === 2 && pages.length){
+      var t = touchInfo(e.touches);
+      pinch = { d: t.d, z: zoom, x: t.x, y: t.y };
+    }
+  }, { passive:true });
+  viewer.addEventListener('touchmove', function(e){
+    if(!pinch || e.touches.length !== 2) return;
+    e.preventDefault();
+    var t = touchInfo(e.touches);
+    zoomAt(pinch.z * t.d / pinch.d, t.x, t.y);
+    viewer.scrollLeft -= t.x - pinch.x;
+    viewer.scrollTop -= t.y - pinch.y;
+    pinch.x = t.x; pinch.y = t.y;
+  }, { passive:false });
+  viewer.addEventListener('touchend', function(e){ if(e.touches.length < 2) pinch = null; });
+
+  /* ---------- teclado ---------- */
+  viewer.addEventListener('keydown', function(e){
+    if(e.key === '+' || e.key === '='){ zoomCenter(1.25); e.preventDefault(); }
+    else if(e.key === '-' || e.key === '_'){ zoomCenter(1 / 1.25); e.preventDefault(); }
+    else if(e.key === '0'){ zoomCenter(1 / zoom); e.preventDefault(); }
+  });
 
   function start(){
     var lib = window.pdfjsLib;
@@ -243,6 +427,7 @@ body.pdf-expanded{ overflow:hidden; }
       pages = list.map(function(page, i){
         var canvas = document.createElement('canvas');
         canvas.className = 'pdf-page';
+        canvas.width = 1; canvas.height = 1;
         canvas.setAttribute('role', 'img');
         canvas.setAttribute('aria-label', 'Página ' + (i + 1) + ' de ' + list.length);
         viewer.appendChild(canvas);
@@ -253,12 +438,9 @@ body.pdf-expanded{ overflow:hidden; }
     }).catch(fallback);
   }
 
-  document.getElementById('pdfZoomIn').addEventListener('click', function(){
-    if(zoomIdx < zoomLevels.length - 1){ zoomIdx++; render(); updatePageLabel(); }
-  });
-  document.getElementById('pdfZoomOut').addEventListener('click', function(){
-    if(zoomIdx > 0){ zoomIdx--; render(); updatePageLabel(); }
-  });
+  document.getElementById('pdfZoomIn').addEventListener('click', function(){ zoomCenter(1.25); });
+  document.getElementById('pdfZoomOut').addEventListener('click', function(){ zoomCenter(1 / 1.25); });
+  viewer.addEventListener('scroll', function(){ updateBar(); scheduleDraw(); }, { passive:true });
   viewer.addEventListener('scroll', updatePageLabel, { passive:true });
 
   /* ---------- contenido: saltar a la página del PDF ---------- */
@@ -290,7 +472,7 @@ body.pdf-expanded{ overflow:hidden; }
   window.addEventListener('resize', function(){
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(function(){
-      if(viewer.clientWidth !== lastWidth) render();
+      if(viewer.clientWidth !== lastWidth) render(); else updateBar();
     }, 200);
   });
 
