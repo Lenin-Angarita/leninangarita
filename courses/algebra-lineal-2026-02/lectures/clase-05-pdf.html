@@ -33,7 +33,7 @@
 .pdf-viewer::-webkit-scrollbar{ display:none; }
 .pdf-viewer.dragging{ cursor:grabbing; }
 .pdf-viewer:focus-visible{ outline:2px solid var(--teal); outline-offset:-2px; }
-/* barra lateral semitransparente: la rueda del mouse aquí baja en vez de hacer zoom */
+/* barra lateral semitransparente: indica la posición y se puede arrastrar para bajar */
 .pdf-vbar{
   position:absolute; top:6px; bottom:6px; right:4px; width:12px; z-index:2;
   border-radius:999px; background:color-mix(in srgb, var(--ink) 12%, transparent);
@@ -158,7 +158,7 @@ body.pdf-expanded{ overflow:hidden; }
         <div class="pdf-vbar" id="pdfBar" hidden><div class="pdf-vbar__thumb" id="pdfThumb"></div></div>
       </div>
     </div>
-    <p class="pdf-hint">Zoom: rueda del mouse o pellizco · arrastra para moverte · para bajar con la rueda, usa la barra lateral derecha.</p>
+    <p class="pdf-hint">La rueda del mouse baja por el documento · zoom: Ctrl + rueda, pellizco o los botones −/+ · arrastra para moverte.</p>
 
     <nav class="lecture-pager" aria-label="Otras clases">
       <a class="btn btn--sm" href="clase-04-pdf.html">&larr; Clase 4</a>
@@ -182,8 +182,8 @@ body.pdf-expanded{ overflow:hidden; }
 <script src="../../../assets/js/main.js"></script>
 <script>
 /* ---------- visor del PDF (PDF.js) ----------
-   Zoom con la rueda del mouse, pellizco o botones; arrastrar mueve el documento.
-   La barra lateral derecha sirve para bajar con la rueda sin hacer zoom.
+   Zoom con Ctrl + rueda del mouse, pellizco o botones; arrastrar mueve el documento.
+   La rueda baja por el documento; Ctrl + rueda (o el pellizco) hace zoom.
    Mientras se hace zoom las páginas se estiran (rápido) y al terminar se dibujan
    nítidas, primero las visibles; las lejanas quedan en baja resolución. */
 (function(){
@@ -353,12 +353,18 @@ body.pdf-expanded{ overflow:hidden; }
     viewer.scrollBy({ top: (e.clientY < r.top ? -1 : 1) * viewer.clientHeight * 0.9, behavior:'smooth' });
   });
 
-  /* ---------- rueda del mouse / pellizco del trackpad: zoom ---------- */
+  /* ---------- Ctrl + rueda o pellizco del trackpad: zoom ----------
+     La rueda sola desplaza el documento como cualquier página (y al llegar
+     al final sigue con la página web); en celular y tablet el zoom es con
+     el pellizco de dos dedos (más abajo). */
   viewer.addEventListener('wheel', function(e){
-    if(!pages.length) return;
+    if(!pages.length || !e.ctrlKey) return;
     e.preventDefault();
     var p = local(e);
-    zoomAt(zoom * Math.exp(-wheelDelta(e) * (e.ctrlKey ? 0.01 : 0.0018)), p.x, p.y);
+    var dy = wheelDelta(e);
+    /* mouse: pasos grandes y discretos → ~20 % por paso; trackpad: pasos pequeños → zoom continuo */
+    var f = Math.abs(dy) >= 40 ? (dy < 0 ? 1.2 : 1 / 1.2) : Math.exp(-dy * 0.01);
+    zoomAt(zoom * f, p.x, p.y);
   }, { passive:false });
 
   /* ---------- arrastrar con el mouse ---------- */
