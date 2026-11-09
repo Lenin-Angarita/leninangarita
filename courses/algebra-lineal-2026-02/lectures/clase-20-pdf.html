@@ -51,6 +51,8 @@
   box-shadow:0 2px 10px rgba(27,36,48,.18); border-radius:2px;
 }
 .pdf-page:last-child{ margin-bottom:0; }
+.pdf-pages{ transform-origin:0 0; }
+.pdf-spacer{ position:absolute; left:0; top:0; pointer-events:none; visibility:hidden; }
 .pdf-fallback{ width:100%; height:100%; border:0; background:#fff; }
 .pdf-msg{ font-family:"JetBrains Mono", monospace; font-size:.8rem; color:var(--ink-muted); text-align:center; padding:2rem 1rem; margin:0; }
 @media (max-width:560px){
@@ -201,6 +203,10 @@ body.pdf-expanded{ overflow:hidden; }
   var zoomLabel = document.getElementById('pdfZoomLabel');
   var pageLabel = document.getElementById('pdfPageLabel');
   var bar = document.getElementById('pdfBar');
+  var wrap = document.createElement('div');      /* contenedor de las páginas (se escala en el pellizco) */
+  wrap.className = 'pdf-pages';
+  var spacer = document.createElement('div');    /* mantiene el área desplazable durante el pellizco */
+  spacer.className = 'pdf-spacer';
   var thumb = document.getElementById('pdfThumb');
 
   function fallback(){
@@ -234,7 +240,7 @@ body.pdf-expanded{ overflow:hidden; }
 
   /* dibuja las páginas cuya resolución no corresponde a la actual, empezando por las visibles */
   function draw(){
-    if(!pdfDoc) return;
+    if(!pdfDoc || pinch) return;
     var gen = ++generation;
     pages.forEach(function(p){ if(p.task){ try{ p.task.cancel(); }catch(e){} } });
     var top = viewer.scrollTop, h = viewer.clientHeight, mid = top + h / 2;
@@ -389,29 +395,64 @@ body.pdf-expanded{ overflow:hidden; }
     zoomAt(zoom >= MAX_ZOOM - 0.01 ? 1 : zoom * 1.6, p.x, p.y);
   });
 
-  /* ---------- pellizco con dos dedos ---------- */
+  /* ---------- pellizco con dos dedos ----------
+     Mientras dura el gesto solo se escala el contenedor de las páginas con CSS
+     (fluido, sin recalcular tamaños) y el desplazamiento queda fijo; al soltar
+     se aplica el zoom final una sola vez y se redibuja nítido. */
   var pinch = null;
   function touchInfo(t){
     var r = viewer.getBoundingClientRect();
     return { d: Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY),
              x: (t[0].clientX + t[1].clientX) / 2 - r.left, y: (t[0].clientY + t[1].clientY) / 2 - r.top };
   }
+  function pinchScale(t){
+    var z = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, pinch.z * t.d / pinch.d));
+    return z / pinch.z;
+  }
+  function endPinch(){
+    if(!pinch) return;
+    var k = pinch.k, last = pinch.last, a = pinch.anchor;
+    wrap.style.transform = ''; wrap.style.transformOrigin = '';
+    if(spacer.parentNode) spacer.parentNode.removeChild(spacer);
+    pinch = null;
+    zoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom * k));
+    layout();
+    a.cx = last.x; a.cy = last.y;
+    restore(a);
+    updatePageLabel();
+    scheduleDraw();
+  }
   viewer.addEventListener('touchstart', function(e){
-    if(e.touches.length === 2 && pages.length){
-      var t = touchInfo(e.touches);
-      pinch = { d: t.d, z: zoom, x: t.x, y: t.y };
-    }
-  }, { passive:true });
-  viewer.addEventListener('touchmove', function(e){
-    if(!pinch || e.touches.length !== 2) return;
-    e.preventDefault();
+    if(e.touches.length !== 2 || !pages.length || pinch) return;
+    if(e.cancelable) e.preventDefault();      /* que el navegador no empiece a desplazar */
     var t = touchInfo(e.touches);
-    zoomAt(pinch.z * t.d / pinch.d, t.x, t.y);
-    viewer.scrollLeft -= t.x - pinch.x;
-    viewer.scrollTop -= t.y - pinch.y;
-    pinch.x = t.x; pinch.y = t.y;
+    var cs = getComputedStyle(viewer);
+    pinch = { d: t.d, z: zoom, k: 1, first: t, last: t, sl: viewer.scrollLeft, st: viewer.scrollTop,
+              anchor: anchorAt(t.x, t.y) };
+    /* reserva el tamaño actual para que el navegador no recorte el desplazamiento al alejar */
+    spacer.style.width = viewer.scrollWidth + 'px';
+    spacer.style.height = viewer.scrollHeight + 'px';
+    viewer.appendChild(spacer);
+    wrap.style.transformOrigin = (pinch.sl + t.x - parseFloat(cs.paddingLeft)) + 'px ' +
+                                 (pinch.st + t.y - parseFloat(cs.paddingTop)) + 'px';
   }, { passive:false });
-  viewer.addEventListener('touchend', function(e){ if(e.touches.length < 2) pinch = null; });
+  viewer.addEventListener('touchmove', function(e){
+    if(!pinch) return;
+    if(e.cancelable) e.preventDefault();
+    if(e.touches.length !== 2) return;
+    var t = touchInfo(e.touches);
+    pinch.k = pinchScale(t);
+    pinch.last = t;
+    viewer.scrollLeft = pinch.sl; viewer.scrollTop = pinch.st;   /* anula cualquier desplazamiento nativo */
+    wrap.style.transform = 'translate(' + (t.x - pinch.first.x) + 'px,' + (t.y - pinch.first.y) + 'px) scale(' + pinch.k + ')';
+    zoomLabel.textContent = Math.round(zoom * pinch.k * 100) + '%';
+  }, { passive:false });
+  viewer.addEventListener('touchend', function(e){ if(e.touches.length < 2) endPinch(); });
+  viewer.addEventListener('touchcancel', endPinch);
+  /* Safari (iPhone/iPad): que no haga su propio zoom de la página encima del nuestro */
+  ['gesturestart', 'gesturechange', 'gestureend'].forEach(function(type){
+    viewer.addEventListener(type, function(e){ e.preventDefault(); }, { passive:false });
+  });
 
   /* ---------- teclado ---------- */
   viewer.addEventListener('keydown', function(e){
@@ -432,13 +473,14 @@ body.pdf-expanded{ overflow:hidden; }
     }).then(function(list){
       viewer.innerHTML = '';
       viewer.style.position = 'relative';
+      viewer.appendChild(wrap);
       pages = list.map(function(page, i){
         var canvas = document.createElement('canvas');
         canvas.className = 'pdf-page';
         canvas.width = 1; canvas.height = 1;
         canvas.setAttribute('role', 'img');
         canvas.setAttribute('aria-label', 'Página ' + (i + 1) + ' de ' + list.length);
-        viewer.appendChild(canvas);
+        wrap.appendChild(canvas);
         return { page: page, canvas: canvas };
       });
       render();
