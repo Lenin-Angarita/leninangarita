@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script>document.documentElement.classList.add("paged");</script>
 <script>try { if (window.self !== window.top) document.documentElement.classList.add("embedded"); } catch (e) { document.documentElement.classList.add("embedded"); }</script>
 <title>Un acercamiento a los nudos salvajes - Lenin Angarita</title>
 <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
@@ -423,6 +424,19 @@ html.embedded .site-foot, html.embedded .site-brand, html.embedded .tb-sep, html
 html.embedded .brand { display: inline; }
 /* el botón Present está en la página; el de la presentación solo aparece para salir */
 html.embedded:not(.present) #presentBtn { display: none; }
+
+/* ===================== una diapositiva a la vez ===================== */
+html.paged { overflow: hidden; overscroll-behavior: none; }   /* solo el html: la ventana sigue siendo la que se desplaza */
+html.paged .slide {
+  height: 100vh; height: 100dvh; min-height: 0; overflow-x: hidden; overflow-y: auto;
+  overscroll-behavior: contain; touch-action: pan-y; justify-content: safe center;
+}
+html.paged:not(.present) .slide { padding-top: 62px; padding-bottom: 38px; }
+html.paged .slide + .slide::before { display: none; }
+html.paged .slide.has-foot .footline { display: none; }
+html.paged .slide .site-foot { margin: 2.2rem calc(-1 * clamp(18px, 5vw, 64px)) -38px; font-size: 15px; }
+.nav-pill { padding: .3em .62em; font-size: 15px; line-height: 1; }
+@media (max-width: 480px) { .nav-pill { display: none; } }
 </style>
 </head>
 <body>
@@ -440,7 +454,9 @@ html.embedded:not(.present) #presentBtn { display: none; }
     <a href="#ejemplos" data-sec="ej">Ejemplos</a>
   </nav>
   <div class="tb-right">
+    <button id="slidePrevBtn" class="pill nav-pill" type="button" aria-label="Diapositiva anterior">‹</button>
     <span id="counter">1/46</span>
+    <button id="slideNextBtn" class="pill nav-pill" type="button" aria-label="Diapositiva siguiente">›</button>
     <button id="presentBtn" class="pill pill--accent" title="Modo presentación (P)">▶ Presentar</button>
     <a id="downloadBtn" class="pill" href="wild-knots-2026-1.pdf" download="Nudos-Salvajes-Lenin-Angarita.pdf" title="Descargar la presentación en PDF" aria-label="Descargar la presentación en PDF"><span aria-hidden="true">⤓</span><span class="lbl"> Descargar</span></a>
   </div>
@@ -3677,7 +3693,7 @@ html.embedded:not(.present) #presentBtn { display: none; }
   updateCurrent();
 
   /* ---------------- teclado y modo presentación ---------------- */
-  function go(i) { i = Math.max(0, Math.min(slides.length - 1, i)); slides[i].scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' }); }
+  function go(i) { i = Math.max(0, Math.min(slides.length - 1, i)); slides[i].scrollTop = 0; scrollTo({ top: slides[i].getBoundingClientRect().top + scrollY, behavior: reduce ? 'auto' : 'smooth' }); }
   function next() {
     const s = slides[current];
     const pp = $('.pause-part:not(.shown)', s); if (pp) { pp.classList.add('shown'); setTimeout(() => fitSlide(s), 850); return; }
@@ -3695,11 +3711,13 @@ html.embedded:not(.present) #presentBtn { display: none; }
   function fitSlide(s) {
     s.style.removeProperty('--fs');
     const present = document.documentElement.classList.contains('present');
-    if (!present && (innerWidth < 900 || innerHeight < 520)) return;
+    const paged = document.documentElement.classList.contains('paged');
+    if (!present && !paged && (innerWidth < 900 || innerHeight < 520)) return;
     let fs = parseFloat(getComputedStyle(s).fontSize);
-    const floor = present ? 8 : 13;
+    const floor = present ? 8 : (innerWidth < 900 ? 13 : 10);
     for (let k = 0; k < 6; k++) {
-      const over = s.scrollHeight / innerHeight;
+      const foot = s.querySelector('.site-foot');
+      const over = (s.scrollHeight - (foot ? foot.offsetHeight : 0)) / innerHeight;
       if (over <= 1.003 || fs <= floor) break;
       fs = Math.max(floor, fs / Math.min(over, 1.3) * 0.985);
       s.style.setProperty('--fs', fs + 'px');
@@ -3713,8 +3731,8 @@ html.embedded:not(.present) #presentBtn { display: none; }
     $('#presentBtn').textContent = on ? '✕ Salir' : '▶ Presentar';
     try { if (on && document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => { }); else if (!on && document.fullscreenElement) document.exitFullscreen().catch(() => { }); } catch (e) { }
     const keep = current;
-    setTimeout(() => { fitAll(); slides[keep].scrollIntoView({ block: 'start' }); }, 80);
-    setTimeout(() => { fitAll(); slides[keep].scrollIntoView({ block: 'start' }); }, 500);
+    setTimeout(() => { fitAll(); scrollTo({ top: slides[keep].getBoundingClientRect().top + scrollY, behavior: 'instant' }); }, 80);
+    setTimeout(() => { fitAll(); scrollTo({ top: slides[keep].getBoundingClientRect().top + scrollY, behavior: 'instant' }); }, 500);
   }
   $('#presentBtn').addEventListener('click', togglePresent);
   document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement && document.documentElement.classList.contains('present')) togglePresent(); });
@@ -3957,6 +3975,73 @@ html.embedded:not(.present) #presentBtn { display: none; }
   pb.addEventListener('click', function () { later(650); });
   addEventListener('keydown', function (e) { if (e.key === 'p' || e.key === 'P') later(650); });
   document.addEventListener('fullscreenchange', function () { later(650); });
+  /* ---------- una diapositiva a la vez: rueda, deslizar y botones ---------- */
+  function key(k) { document.body.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true })); }
+  function current() {
+    var mid = innerHeight * 0.45, best = null;
+    document.querySelectorAll('.slide').forEach(function (s) { var r = s.getBoundingClientRect(); if (r.top <= mid && r.bottom >= mid) best = s; });
+    return best;
+  }
+  document.getElementById('slidePrevBtn').addEventListener('click', function () { key('ArrowUp'); });
+  document.getElementById('slideNextBtn').addEventListener('click', function () { key('ArrowDown'); });
+
+  /* rueda: si la diapositiva tiene contenido por recorrer se desplaza dentro de ella;
+     si no, un gesto de rueda = una diapositiva (la inercia del trackpad no salta varias) */
+  var acc = 0, quiet = null, lockedUntil = 0, scrolledInBurst = false;
+  addEventListener('wheel', function (e) {
+    if (e.ctrlKey) return;                                   /* zoom del navegador */
+    var s = current(), dy = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY;
+    if (Math.abs(e.deltaX) > Math.abs(dy)) return;
+    clearTimeout(quiet);
+    quiet = setTimeout(function () { acc = 0; scrolledInBurst = false; }, 220);
+    if (s) {
+      var canDown = s.scrollTop + s.clientHeight < s.scrollHeight - 2, canUp = s.scrollTop > 2;
+      if ((dy > 0 && canDown) || (dy < 0 && canUp)) { scrolledInBurst = true; return; }   /* desplazamiento dentro de la diapositiva */
+    }
+    e.preventDefault();
+    if (scrolledInBurst || Date.now() < lockedUntil) return;
+    acc += dy;
+    if (Math.abs(acc) >= 30) { key(acc > 0 ? 'ArrowDown' : 'ArrowUp'); acc = 0; lockedUntil = Date.now() + 550; scrolledInBurst = true; }
+  }, { passive: false });
+
+  /* deslizar el dedo a la izquierda / derecha */
+  var t0 = null;
+  addEventListener('touchstart', function (e) {
+    if (e.touches.length !== 1 || e.target.closest('input, select, textarea, button, a, label, summary, .scroll-x, .katex-display, #mnOut')) { t0 = null; return; }
+    t0 = { x: e.touches[0].clientX, y: e.touches[0].clientY, t: Date.now() };
+  }, { passive: true });
+  addEventListener('touchend', function (e) {
+    if (!t0) return;
+    var c = e.changedTouches[0], dx = c.clientX - t0.x, dy = c.clientY - t0.y, dt = Date.now() - t0.t;
+    t0 = null;
+    if (dt < 900 && Math.abs(dx) > 55 && Math.abs(dx) > 1.5 * Math.abs(dy)) key(dx < 0 ? 'ArrowDown' : 'ArrowUp');
+  }, { passive: true });
+
+  /* tras girar el dispositivo o cambiar el tamaño, la diapositiva actual queda alineada */
+  var rz;
+  addEventListener('resize', function () {
+    clearTimeout(rz);
+    rz = setTimeout(function () { var s = current(); if (s) scrollTo({ top: s.getBoundingClientRect().top + scrollY, behavior: 'instant' }); }, 400);
+  });
+
+  /* página completa: el pie del sitio va al final de la última diapositiva */
+  if (!document.documentElement.classList.contains('embedded')) {
+    var all = document.querySelectorAll('.slide'), last = all[all.length - 1], foot = document.querySelector('.site-foot');
+    if (last && foot) { last.appendChild(foot); last.classList.add('has-foot'); }
+  }
+
+  /* enlaces internos (#seccion): igual, sin mover la página que contiene la presentación */
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('a[href^="#"]');
+    if (!a || a.getAttribute('href').length < 2) return;
+    var t = document.getElementById(a.getAttribute('href').slice(1));
+    if (!t) return;
+    e.preventDefault();
+    var s = t.closest('.slide') || t;
+    s.scrollTop = 0;
+    scrollTo({ top: s.getBoundingClientRect().top + scrollY, behavior: 'smooth' });
+  });
+
   /* botón ✕ flotante (pantallas táctiles en modo presentación) */
   document.getElementById('presentExit').addEventListener('click', function () { pb.click(); });
 })();

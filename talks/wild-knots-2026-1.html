@@ -633,6 +633,21 @@ body.presenting{ overflow:hidden; }
     window.open(frame.getAttribute('data-src'), '_blank', 'noopener');
   });
 
+  /* con la versión animada abierta, las flechas de la página pasan las diapositivas */
+  var NAV_KEYS = ['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight', 'PageDown', 'PageUp', ' ', 'Home', 'End'];
+  document.addEventListener('keydown', function(e){
+    if(document.getElementById('panelAnim').hidden || e.ctrlKey || e.metaKey || e.altKey) return;
+    if(NAV_KEYS.indexOf(e.key) < 0) return;
+    var t = e.target;
+    if(t.closest && (t.closest('input, textarea, select, .version-tab') || (e.key === ' ' && t.closest('button, a')))) return;
+    try{
+      var w = frame.contentWindow;
+      if(!w || !w.document.body) return;
+      w.document.body.dispatchEvent(new w.KeyboardEvent('keydown', { key: e.key, bubbles: true, cancelable: true }));
+      e.preventDefault();
+    }catch(err){}
+  });
+
   function fromHash(){ select(document.getElementById(location.hash === '#animated' ? 'tabAnim' : 'tabPdf'), false); }
   if(location.hash === '#animated') fromHash();
   window.addEventListener('hashchange', fromHash);
