@@ -74,6 +74,33 @@ body.presenting{ overflow:hidden; }
 @media (max-width:560px){
   .slides-sep{ display:none; }
 }
+
+/* ---------- pestañas: versión PDF / versión animada ---------- */
+.version-tabs{ display:flex; gap:.25rem; margin:1.4rem 0 0; border-bottom:1px solid var(--rule); }
+.version-tab{
+  font-family:"Inter", sans-serif; font-size:.88rem; font-weight:600; color:var(--ink-muted);
+  background:transparent; border:1px solid transparent; border-bottom:none; margin-bottom:-1px;
+  border-radius:var(--radius-md) var(--radius-md) 0 0; padding:.55rem 1.05rem; cursor:pointer;
+  display:inline-flex; align-items:center; gap:.45em;
+}
+.version-tab:hover{ color:var(--ink); }
+.version-tab[aria-selected="true"]{ color:var(--ink); background:var(--surface); border-color:var(--rule); }
+.version-tab:focus-visible{ outline:2px solid var(--teal); outline-offset:-2px; }
+.version-tab svg{ width:1em; height:1em; flex-shrink:0; }
+.version-panel > .slides-card{ margin-top:0; border-top-left-radius:0; }
+/* celular: sin pestañas; el visor PDF ofrece "Animated" en lugar de Present */
+#animatedLink{ display:none; }
+@media (max-width:640px){
+  .version-tabs, #panelAnim{ display:none !important; }
+  #presentBtn{ display:none; }
+  #animatedLink{ display:inline-flex; }
+  .version-panel > .slides-card{ margin-top:1.4rem; border-top-left-radius:var(--radius-md); }
+}
+.anim-frame{ display:block; width:100%; height:min(80vh, 760px); border:0; background:#F6F4EE; }
+@media (max-width:560px){
+  .version-tab{ padding:.5rem .75rem; font-size:.84rem; }
+  .anim-frame{ height:78vh; }
+}
 </style>
 </head>
 <body>
@@ -116,6 +143,18 @@ body.presenting{ overflow:hidden; }
       the Cantor space. Slides in Spanish.
     </p>
 
+    <div class="version-tabs" role="tablist" aria-label="Versions of the presentation">
+      <button type="button" class="version-tab" role="tab" id="tabPdf" aria-controls="panelPdf" aria-selected="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"/><path d="M14 3v5h5"/></svg>
+        PDF version
+      </button>
+      <button type="button" class="version-tab" role="tab" id="tabAnim" aria-controls="panelAnim" aria-selected="false" tabindex="-1">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 17c3-8 6 4 9-3s6 3 9-6"/><circle cx="21" cy="8" r="1.4" fill="currentColor"/></svg>
+        Animated version
+      </button>
+    </div>
+
+    <div class="version-panel" id="panelPdf" role="tabpanel" aria-labelledby="tabPdf">
     <div class="slides-card" id="slidesCard" data-src="homotopy-whitehead-2025-2.pdf">
       <div class="slides-toolbar">
         <div class="group">
@@ -131,6 +170,7 @@ body.presenting{ overflow:hidden; }
         </div>
         <div class="group">
           <button type="button" class="btn btn--sm btn--accent" id="presentBtn">&#9654; Present</button>
+          <a class="btn btn--sm btn--accent" id="animatedLink" href="homotopy-whitehead-2025-2-animated.html">&#9654; Animated</a>
           <a class="btn btn--sm" href="homotopy-whitehead-2025-2.pdf" target="_blank" rel="noopener">Open in new tab</a>
           <a class="btn btn--sm" href="homotopy-whitehead-2025-2.pdf" download="Homotopia-Whitehead-Lenin-Angarita.pdf">Download</a>
         </div>
@@ -141,6 +181,24 @@ body.presenting{ overflow:hidden; }
       </div>
     </div>
     <p class="slides-hint">← → or swipe to change slides · pinch or mouse wheel to zoom · drag to move · <strong>Present</strong> shows the slides full screen (Esc to exit).</p>
+    </div>
+
+    <div class="version-panel" id="panelAnim" role="tabpanel" aria-labelledby="tabAnim" hidden>
+      <div class="slides-card">
+        <div class="slides-toolbar">
+          <div class="group">
+            <span class="slides-status" style="text-align:left;">Interactive slides with animated figures</span>
+          </div>
+          <div class="group">
+            <button type="button" class="btn btn--sm btn--accent" id="animPresent">&#9654; Present</button>
+            <a class="btn btn--sm" href="homotopy-whitehead-2025-2-animated.html" download="Homotopia-Whitehead-animada-Lenin-Angarita.html" title="Download the animated version (HTML page)">Download</a>
+          </div>
+        </div>
+        <iframe class="anim-frame" id="animFrame" data-src="homotopy-whitehead-2025-2-animated.html"
+                title="Animated slides: Grupos de homotopía superior y Teorema de Whitehead" allow="fullscreen" allowfullscreen></iframe>
+      </div>
+      <p class="slides-hint">Scroll, ↓ or space to advance · the figures are drawn as each slide appears · <strong>Present</strong> shows the slides full screen (Esc to exit).</p>
+    </div>
   </div>
 </main>
 
@@ -542,6 +600,71 @@ body.presenting{ overflow:hidden; }
   script.onload = start;
   script.onerror = fallback;
   document.head.appendChild(script);
+})();
+</script>
+<script>
+/* ---------- pestañas: versión PDF / versión animada ---------- */
+(function(){
+  var tabs = Array.prototype.slice.call(document.querySelectorAll('.version-tab'));
+  var frame = document.getElementById('animFrame');
+
+  function select(tab, updateUrl){
+    tabs.forEach(function(t){
+      var on = t === tab;
+      t.setAttribute('aria-selected', on ? 'true' : 'false');
+      t.tabIndex = on ? 0 : -1;
+      document.getElementById(t.getAttribute('aria-controls')).hidden = !on;
+    });
+    if(tab.id === 'tabAnim' && !frame.getAttribute('src')){
+      frame.setAttribute('src', frame.getAttribute('data-src'));   /* la versión animada se carga solo al abrir su pestaña */
+    }
+    if(tab.id === 'tabPdf') window.dispatchEvent(new Event('resize'));   /* el visor PDF recalcula su tamaño */
+    if(updateUrl){
+      try{ history.replaceState(null, '', tab.id === 'tabAnim' ? '#animated' : location.pathname + location.search); }catch(e){}
+    }
+  }
+
+  tabs.forEach(function(t, i){
+    t.addEventListener('click', function(){ select(t, true); });
+    t.addEventListener('keydown', function(e){
+      var k = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+      if(!k) return;
+      e.preventDefault();
+      var n = tabs[(i + k + tabs.length) % tabs.length];
+      n.focus(); select(n, true);
+    });
+  });
+
+  /* "Present" de la versión animada: usa el modo presentación de la propia presentación */
+  document.getElementById('animPresent').addEventListener('click', function(){
+    try{
+      var b = frame.contentWindow.document.getElementById('presentBtn');
+      if(b){ b.click(); return; }
+    }catch(e){}
+    window.open(frame.getAttribute('data-src'), '_blank', 'noopener');
+  });
+
+  /* con la versión animada abierta, las flechas de la página pasan las diapositivas */
+  var NAV_KEYS = ['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight', 'PageDown', 'PageUp', ' ', 'Home', 'End'];
+  document.addEventListener('keydown', function(e){
+    if(document.getElementById('panelAnim').hidden || e.ctrlKey || e.metaKey || e.altKey) return;
+    if(NAV_KEYS.indexOf(e.key) < 0) return;
+    var t = e.target;
+    if(t.closest && (t.closest('input, textarea, select, .version-tab') || (e.key === ' ' && t.closest('button, a')))) return;
+    try{
+      var w = frame.contentWindow;
+      if(!w || !w.document.body) return;
+      w.document.body.dispatchEvent(new w.KeyboardEvent('keydown', { key: e.key, bubbles: true, cancelable: true }));
+      e.preventDefault();
+    }catch(err){}
+  });
+
+  var phone = window.matchMedia('(max-width: 640px)');
+  function fromHash(){ select(document.getElementById(location.hash === '#animated' && !phone.matches ? 'tabAnim' : 'tabPdf'), false); }
+  var onPhone = function(){ if(phone.matches && !document.getElementById('panelAnim').hidden) select(document.getElementById('tabPdf'), false); };
+  if(phone.addEventListener) phone.addEventListener('change', onPhone); else if(phone.addListener) phone.addListener(onPhone);
+  if(location.hash === '#animated') fromHash();
+  window.addEventListener('hashchange', fromHash);
 })();
 </script>
 </body>
