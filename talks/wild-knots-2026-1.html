@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Un acercamiento a los nudos salvajes - Lenin Angarita</title>
 <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="../assets/img/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="../assets/img/apple-touch-icon.png">
-<title>Un acercamiento a los nudos salvajes - Lenin Angarita</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=STIX+Two+Text:wght@600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet">
@@ -390,6 +390,32 @@ a { color: var(--site-teal); }
 .site-foot__note { color: var(--site-faint); font-size: .82rem; margin: 0; }
 .site-foot__ai { flex-basis: 100%; margin: 0; color: #9a9a9a; font-size: .66rem; }
 html.present .site-foot { display: none; }
+
+/* ===================== celular y tablet ===================== */
+/* las secciones solo caben junto al nombre en pantallas anchas */
+@media (max-width: 1000px) { #secnav { display: none; } .tb-right { margin-left: auto; } }
+/* fórmula que no cabe ni reducida: sombra en el borde derecho que indica que se puede deslizar */
+.katex-display.kd-scroll { box-shadow: inset -14px 0 10px -12px rgba(27, 36, 48, .35); }
+/* modo presentación: altura visible real (sin la barra del navegador del celular) */
+html.present .slide { height: 100dvh; }
+/* botón para salir en pantallas táctiles, donde la barra no aparece al pasar el mouse */
+.present-exit {
+  display: none; position: fixed; top: 10px; right: 10px; z-index: 70;
+  width: 40px; height: 40px; border-radius: 50%; border: 1px solid rgba(27, 36, 48, .2);
+  background: rgba(246, 244, 238, .88); color: var(--ink); font: 600 17px/1 "Inter", system-ui, sans-serif;
+  align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(6px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .12);
+}
+@media (hover: none) { html.present .present-exit { display: flex; } }
+/* celular vertical: sugerir girar para presentar */
+.present-rotate {
+  display: none; position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 70;
+  background: rgba(27, 36, 48, .88); color: #F6F4EE; font: 500 13px/1.3 "Inter", system-ui, sans-serif;
+  padding: .55em 1em; border-radius: 999px; white-space: nowrap; pointer-events: none;
+  animation: presentHint 4.5s ease forwards;
+}
+@media (max-width: 640px) and (orientation: portrait) { html.present .present-rotate { display: block; } }
+@keyframes presentHint { 0%, 80% { opacity: 1; } 100% { opacity: 0; } }
 </style>
 </head>
 <body>
@@ -412,6 +438,9 @@ html.present .site-foot { display: none; }
     <a id="downloadBtn" class="pill" href="wild-knots-2026-1.pdf" download="Nudos-Salvajes-Lenin-Angarita.pdf" title="Descargar la presentación en PDF" aria-label="Descargar la presentación en PDF"><span aria-hidden="true">⤓</span><span class="lbl"> Descargar</span></a>
   </div>
 </header>
+
+<button id="presentExit" class="present-exit" type="button" aria-label="Salir del modo presentación">✕</button>
+<div class="present-rotate" role="status">Gira el teléfono para presentar</div>
 
 <main id="deck">
 
@@ -3894,6 +3923,35 @@ html.present .site-foot { display: none; }
   window.__deck = { figs, cds, slides, go };
 })();
 
+</script>
+<script>
+/* ---------- ajustes del sitio para celular y tablet ---------- */
+(function () {
+  /* fórmulas en bloque más anchas que su caja: se reducen hasta un 28 %;
+     si aun así no caben, quedan deslizables (con sombra a la derecha) */
+  function fitMath() {
+    document.querySelectorAll('.katex-display').forEach(function (d) {
+      var k = d.querySelector(':scope > .katex');
+      if (!k) return;
+      k.style.fontSize = '';
+      d.classList.remove('kd-scroll');
+      var w = d.clientWidth, sw = k.scrollWidth;
+      if (!w || sw <= w + 1) return;
+      k.style.fontSize = (1.21 * Math.max(0.72, w / sw)) + 'em';
+      if (k.scrollWidth > d.clientWidth + 1) d.classList.add('kd-scroll');
+    });
+  }
+  var t;
+  function later(ms) { clearTimeout(t); t = setTimeout(fitMath, ms); }
+  if (document.readyState === 'complete') later(50); else addEventListener('load', function () { later(50); });
+  addEventListener('resize', function () { later(250); });
+  var pb = document.getElementById('presentBtn');
+  pb.addEventListener('click', function () { later(650); });
+  addEventListener('keydown', function (e) { if (e.key === 'p' || e.key === 'P') later(650); });
+  document.addEventListener('fullscreenchange', function () { later(650); });
+  /* botón ✕ flotante (pantallas táctiles en modo presentación) */
+  document.getElementById('presentExit').addEventListener('click', function () { pb.click(); });
+})();
 </script>
 </body>
 </html>
