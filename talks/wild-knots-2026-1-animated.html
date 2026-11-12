@@ -437,6 +437,22 @@ html.paged .slide.has-foot .footline { display: none; }
 html.paged .slide .site-foot { margin: 2.2rem calc(-1 * clamp(18px, 5vw, 64px)) -38px; font-size: 15px; }
 .nav-pill { padding: .3em .62em; font-size: 15px; line-height: 1; }
 @media (max-width: 480px) { .nav-pill { display: none; } }
+
+/* modo presentación táctil: barra flotante ‹ n/45 › abajo */
+.present-nav {
+  display: none; position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 70;
+  align-items: center; gap: .15rem; padding: .2rem .35rem; border-radius: 999px;
+  background: rgba(27, 36, 48, .74); color: #F6F4EE; backdrop-filter: blur(6px);
+  font: 500 14px/1 "Inter", system-ui, sans-serif; font-variant-numeric: tabular-nums;
+}
+.present-nav button {
+  background: transparent; border: 0; color: inherit; font: 400 26px/1 "Inter", system-ui, sans-serif;
+  width: 46px; height: 42px; border-radius: 50%; cursor: pointer;
+}
+.present-nav button:active { background: rgba(255, 255, 255, .15); }
+#presentCountT { min-width: 3.6em; text-align: center; }
+@media (hover: none) { html.present .present-nav { display: flex; } }
+.present-rotate { bottom: 70px; }
 </style>
 </head>
 <body>
@@ -464,6 +480,11 @@ html.paged .slide .site-foot { margin: 2.2rem calc(-1 * clamp(18px, 5vw, 64px)) 
 
 <button id="presentExit" class="present-exit" type="button" aria-label="Salir del modo presentación">✕</button>
 <div class="present-rotate" role="status">Gira el teléfono para presentar</div>
+<div class="present-nav" role="group" aria-label="Navegación de diapositivas">
+  <button id="presentPrevT" type="button" aria-label="Diapositiva anterior">‹</button>
+  <span id="presentCountT" aria-live="polite"></span>
+  <button id="presentNextT" type="button" aria-label="Diapositiva siguiente">›</button>
+</div>
 
 <main id="deck">
 
@@ -4010,12 +4031,33 @@ html.paged .slide .site-foot { margin: 2.2rem calc(-1 * clamp(18px, 5vw, 64px)) 
     if (e.touches.length !== 1 || e.target.closest('input, select, textarea, button, a, label, summary, .scroll-x, .katex-display, #mnOut')) { t0 = null; return; }
     t0 = { x: e.touches[0].clientX, y: e.touches[0].clientY, t: Date.now() };
   }, { passive: true });
+  var tLast = null;
+  function endSwipe(x, y) {
+    var dx = x - t0.x, dy = y - t0.y, dt = Date.now() - t0.t;
+    t0 = null; tLast = null;
+    if (dt < 900 && Math.abs(dx) > 55 && Math.abs(dx) > 1.5 * Math.abs(dy)) key(dx < 0 ? 'ArrowDown' : 'ArrowUp');
+  }
+  addEventListener('touchmove', function (e) {
+    if (t0 && e.touches.length === 1) tLast = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  }, { passive: true });
   addEventListener('touchend', function (e) {
     if (!t0) return;
-    var c = e.changedTouches[0], dx = c.clientX - t0.x, dy = c.clientY - t0.y, dt = Date.now() - t0.t;
-    t0 = null;
-    if (dt < 900 && Math.abs(dx) > 55 && Math.abs(dx) > 1.5 * Math.abs(dy)) key(dx < 0 ? 'ArrowDown' : 'ArrowUp');
+    var c = e.changedTouches[0];
+    endSwipe(c.clientX, c.clientY);
   }, { passive: true });
+  /* algunos navegadores (Chrome en Android) cancelan el toque si el gesto empezó con algo de
+     movimiento vertical: se usa la última posición conocida del dedo */
+  addEventListener('touchcancel', function () {
+    if (t0 && tLast) endSwipe(tLast.x, tLast.y); else { t0 = null; tLast = null; }
+  }, { passive: true });
+
+  /* barra flotante ‹ n/45 › del modo presentación táctil */
+  document.getElementById('presentPrevT').addEventListener('click', function () { key('ArrowUp'); });
+  document.getElementById('presentNextT').addEventListener('click', function () { key('ArrowDown'); });
+  var cnt = document.getElementById('counter'), cntT = document.getElementById('presentCountT');
+  var syncCount = function () { cntT.textContent = cnt.textContent; };
+  new MutationObserver(syncCount).observe(cnt, { childList: true, characterData: true, subtree: true });
+  syncCount();
 
   /* tras girar el dispositivo o cambiar el tamaño, la diapositiva actual queda alineada */
   var rz;

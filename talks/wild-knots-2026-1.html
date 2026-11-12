@@ -88,6 +88,14 @@ body.presenting{ overflow:hidden; }
 .version-tab:focus-visible{ outline:2px solid var(--teal); outline-offset:-2px; }
 .version-tab svg{ width:1em; height:1em; flex-shrink:0; }
 .version-panel > .slides-card{ margin-top:0; border-top-left-radius:0; }
+/* celular: sin pestañas; el visor PDF ofrece "Animated" en lugar de Present */
+#animatedLink{ display:none; }
+@media (max-width:640px){
+  .version-tabs, #panelAnim{ display:none !important; }
+  #presentBtn{ display:none; }
+  #animatedLink{ display:inline-flex; }
+  .version-panel > .slides-card{ margin-top:1.4rem; border-top-left-radius:var(--radius-md); }
+}
 .anim-frame{ display:block; width:100%; height:min(80vh, 760px); border:0; background:#F6F4EE; }
 @media (max-width:560px){
   .version-tab{ padding:.5rem .75rem; font-size:.84rem; }
@@ -159,6 +167,7 @@ body.presenting{ overflow:hidden; }
         </div>
         <div class="group">
           <button type="button" class="btn btn--sm btn--accent" id="presentBtn">&#9654; Present</button>
+          <a class="btn btn--sm btn--accent" id="animatedLink" href="wild-knots-2026-1-animated.html">&#9654; Animated</a>
           <a class="btn btn--sm" href="wild-knots-2026-1.pdf" target="_blank" rel="noopener">Open in new tab</a>
           <a class="btn btn--sm" href="wild-knots-2026-1.pdf" download="Nudos-Salvajes-Lenin-Angarita.pdf">Download</a>
         </div>
@@ -179,8 +188,7 @@ body.presenting{ overflow:hidden; }
           </div>
           <div class="group">
             <button type="button" class="btn btn--sm btn--accent" id="animPresent">&#9654; Present</button>
-            <a class="btn btn--sm" href="wild-knots-2026-1-animated.html" target="_blank" rel="noopener">Open full page</a>
-            <a class="btn btn--sm" href="wild-knots-2026-1.pdf" download="Nudos-Salvajes-Lenin-Angarita.pdf">Download</a>
+            <a class="btn btn--sm" href="wild-knots-2026-1-animated.html" download="Nudos-Salvajes-animada-Lenin-Angarita.html" title="Download the animated version (HTML page)">Download</a>
           </div>
         </div>
         <iframe class="anim-frame" id="animFrame" data-src="wild-knots-2026-1-animated.html"
@@ -648,7 +656,10 @@ body.presenting{ overflow:hidden; }
     }catch(err){}
   });
 
-  function fromHash(){ select(document.getElementById(location.hash === '#animated' ? 'tabAnim' : 'tabPdf'), false); }
+  var phone = window.matchMedia('(max-width: 640px)');
+  function fromHash(){ select(document.getElementById(location.hash === '#animated' && !phone.matches ? 'tabAnim' : 'tabPdf'), false); }
+  var onPhone = function(){ if(phone.matches && !document.getElementById('panelAnim').hidden) select(document.getElementById('tabPdf'), false); };
+  if(phone.addEventListener) phone.addEventListener('change', onPhone); else if(phone.addListener) phone.addListener(onPhone);
   if(location.hash === '#animated') fromHash();
   window.addEventListener('hashchange', fromHash);
 })();
