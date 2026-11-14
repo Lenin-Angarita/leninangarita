@@ -373,6 +373,8 @@ a { color: var(--site-teal); }
 }
 .pill:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
 .pill--accent { border-color: var(--site-wine); color: var(--site-wine); }
+#downloadBtn { padding: .38em .55em; }
+.pill svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .pill--accent:hover { background: var(--site-wine); color: var(--paper); border-color: var(--site-wine); }
 .pill.on { background: var(--site-wine); border-color: var(--site-wine); color: var(--paper); }
 @media (max-width: 900px) { .tb-sep, .brand { display: none; } }
@@ -474,7 +476,7 @@ html.paged .slide .site-foot { margin: 2.2rem calc(-1 * clamp(18px, 5vw, 64px)) 
     <span id="counter">1/46</span>
     <button id="slideNextBtn" class="pill nav-pill" type="button" aria-label="Diapositiva siguiente">›</button>
     <button id="presentBtn" class="pill pill--accent" title="Modo presentación (P)">▶ Presentar</button>
-    <a id="downloadBtn" class="pill" href="wild-knots-2026-1.pdf" download="Nudos-Salvajes-Lenin-Angarita.pdf" title="Descargar la presentación en PDF" aria-label="Descargar la presentación en PDF"><span aria-hidden="true">⤓</span><span class="lbl"> Descargar</span></a>
+    <a id="downloadBtn" class="pill" href="wild-knots-2026-1.pdf" download="Nudos-Salvajes-Lenin-Angarita.pdf" title="Descargar la presentación en PDF" aria-label="Descargar la presentación en PDF"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg></a>
   </div>
 </header>
 

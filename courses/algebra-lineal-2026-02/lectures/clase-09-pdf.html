@@ -146,15 +146,13 @@ body.pdf-expanded{ overflow:hidden; }
     <div class="pdf-card" id="pdfCard" data-src="../pdf/clase-09.pdf">
       <div class="pdf-toolbar">
         <div class="pdf-group">
-          <button type="button" class="btn btn--sm" id="pdfZoomOut" aria-label="Alejar">&minus;</button>
-          <span class="pdf-status" id="pdfZoomLabel">Ajustar</span>
-          <button type="button" class="btn btn--sm" id="pdfZoomIn" aria-label="Acercar">+</button>
+          <div class="tb-seg"><button type="button" class="tbtn tbtn--icon" id="pdfZoomOut" aria-label="Alejar" data-tip="Alejar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg></button><span class="pdf-status" id="pdfZoomLabel">Ajustar</span><button type="button" class="tbtn tbtn--icon" id="pdfZoomIn" aria-label="Acercar" data-tip="Acercar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg></button></div>
           <span class="pdf-status" id="pdfPageLabel" aria-live="polite"></span>
-          <button type="button" class="btn btn--sm" id="pdfExpand" aria-pressed="false">Pantalla completa</button>
+          <button type="button" class="tbtn tbtn--icon tbtn--toggle" id="pdfExpand" aria-pressed="false" aria-label="Pantalla completa" data-tip="Pantalla completa"><svg viewBox="0 0 24 24" aria-hidden="true" class="i-on"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="m21 3-7 7"/><path d="m3 21 7-7"/></svg><svg viewBox="0 0 24 24" aria-hidden="true" class="i-off"><path d="M4 14h6v6"/><path d="M20 10h-6V4"/><path d="m14 10 7-7"/><path d="m3 21 7-7"/></svg></button>
         </div>
         <div class="pdf-group">
-          <a class="btn btn--sm" href="../pdf/clase-09.pdf" target="_blank" rel="noopener">Abrir en pestaña nueva</a>
-          <a class="btn btn--sm btn--accent" href="../pdf/clase-09.pdf" download="Clase-9-Inversa.pdf">Descargar</a>
+          <a class="tbtn tbtn--icon" href="../pdf/clase-09.pdf" target="_blank" rel="noopener" aria-label="Abrir en pestaña nueva" data-tip="Abrir en pestaña nueva"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg></a>
+          <a class="tbtn tbtn--icon" href="../pdf/clase-09.pdf" download="Clase-9-Inversa.pdf" aria-label="Descargar" data-tip="Descargar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg></a>
         </div>
       </div>
       <div class="pdf-stage">
@@ -167,8 +165,8 @@ body.pdf-expanded{ overflow:hidden; }
     <p class="pdf-hint">La rueda del mouse baja por el documento · zoom: Ctrl + rueda, pellizco o los botones −/+ · arrastra para moverte.</p>
 
     <nav class="lecture-pager" aria-label="Otras clases">
-      <a class="btn btn--sm" href="clase-06-pdf.html">&larr; Clase 6</a>
-      <a class="btn btn--sm" href="clase-10-pdf.html">Clase 10 &rarr;</a>
+      <a class="tbtn" href="clase-06-pdf.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg><span>Clase 6</span></a>
+      <a class="tbtn" href="clase-10-pdf.html"><span>Clase 10</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></a>
     </nav>
   </div>
 </main>
@@ -511,7 +509,7 @@ body.pdf-expanded{ overflow:hidden; }
   function setExpanded(on){
     card.classList.toggle('expanded', on);
     document.body.classList.toggle('pdf-expanded', on);
-    expandBtn.textContent = on ? 'Salir de pantalla completa' : 'Pantalla completa';
+    expandBtn.classList.toggle('is-on', on); expandBtn.setAttribute('aria-label', on ? 'Salir de pantalla completa' : 'Pantalla completa'); expandBtn.setAttribute('data-tip', on ? 'Salir de pantalla completa' : 'Pantalla completa');
     expandBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
     render(); updatePageLabel();
     viewer.focus();

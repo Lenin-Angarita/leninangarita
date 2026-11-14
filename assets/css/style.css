@@ -183,6 +183,56 @@ html[data-theme="dark"] .btn--accent{ color:var(--wine); }
 .btn--sm{ font-size: .8rem; padding: .4em .8em; }
 .btn-row{ display:flex; flex-wrap:wrap; gap:.7rem; }
 
+/* ---------- botones de los visores (clases en PDF, pósters, presentaciones) ---------- */
+.tbtn{
+  --h: 34px;
+  position:relative; display:inline-flex; align-items:center; justify-content:center; gap:.42em;
+  height:var(--h); min-width:var(--h); padding:0 .75rem; border-radius:10px;
+  border:1px solid var(--rule); background:var(--surface); color:var(--ink);
+  font:600 .8rem/1 "Inter", sans-serif; text-decoration:none; white-space:nowrap; cursor:pointer;
+  transition: background .15s, border-color .15s, color .15s, box-shadow .15s, transform .1s;
+  -webkit-tap-highlight-color: transparent;
+}
+.tbtn[hidden]{ display:none; }
+.tbtn:hover{ background:var(--paper-alt); border-color:color-mix(in srgb, var(--ink) 22%, var(--rule)); color:var(--ink); text-decoration:none; }
+.tbtn:active{ transform:scale(.95); }
+.tbtn:focus-visible{ outline:2px solid var(--teal); outline-offset:2px; }
+.tbtn svg{ width:17px; height:17px; flex-shrink:0; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+.tbtn svg.i-fill{ fill:currentColor; stroke:none; width:14px; height:14px; }
+.tbtn--icon{ width:var(--h); padding:0; }
+.tbtn--primary{ background:var(--wine); border-color:var(--wine); color:#fff; box-shadow:0 1px 2px rgba(0,0,0,.12); }
+.tbtn--primary:hover{ background:var(--wine-ink); border-color:var(--wine-ink); color:#fff; box-shadow:0 3px 10px rgba(140,59,59,.25); }
+html[data-theme="dark"] .tbtn--primary, html[data-theme="dark"] .tbtn--primary:hover{ color:#1A2029; }
+.tbtn--toggle .i-off{ display:none; }
+.tbtn--toggle.is-on .i-on{ display:none; }
+.tbtn--toggle.is-on .i-off{ display:block; }
+.tbtn--toggle.is-on{ background:var(--ink); border-color:var(--ink); color:var(--paper); }
+
+/* controles agrupados en una cápsula: [− 100% +] [‹ 3/47 ›] */
+.tb-seg{
+  display:inline-flex; align-items:center; height:34px; border:1px solid var(--rule); border-radius:10px;
+  background:var(--surface);
+}
+.tb-seg .tbtn{ height:32px; border:0; border-radius:0; background:transparent; }
+.tb-seg .tbtn:first-child{ border-radius:9px 0 0 9px; }
+.tb-seg .tbtn:last-child{ border-radius:0 9px 9px 0; }
+.tb-seg .tbtn:hover{ background:var(--paper-alt); }
+.tb-seg > span{
+  font-family:"JetBrains Mono", monospace; font-size:.74rem; color:var(--ink-muted);
+  min-width:4.4em; padding:0 .3rem; text-align:center; font-variant-numeric:tabular-nums;
+}
+
+/* etiqueta al pasar el mouse */
+@media (hover:hover){
+  .tbtn[data-tip]:hover::after{
+    content:attr(data-tip); position:absolute; top:calc(100% + 8px); left:50%; transform:translateX(-50%);
+    background:var(--ink); color:var(--paper); font:500 .72rem/1.2 "Inter", sans-serif;
+    padding:.38em .6em; border-radius:6px; white-space:nowrap; pointer-events:none; z-index:30;
+    box-shadow:0 4px 12px rgba(0,0,0,.18);
+  }
+  .tbtn[data-tip]:last-child:hover::after{ left:auto; right:0; transform:none; }
+}
+
 /* ---------- Tags ---------- */
 .tags{ display:flex; flex-wrap:wrap; gap:.5rem; }
 .tag{

@@ -155,21 +155,17 @@ body.presenting{ overflow:hidden; }
     <div class="slides-card" id="slidesCard" data-src="wild-knots-2026-1.pdf">
       <div class="slides-toolbar">
         <div class="group">
-          <button type="button" class="btn btn--sm" id="slidePrev" aria-label="Previous slide">&lsaquo;</button>
-          <span class="slides-status" id="slideLabel" aria-live="polite">– / –</span>
-          <button type="button" class="btn btn--sm" id="slideNext" aria-label="Next slide">&rsaquo;</button>
+          <div class="tb-seg"><button type="button" class="tbtn tbtn--icon" id="slidePrev" aria-label="Previous slide" data-tip="Previous slide"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button><span class="slides-status" id="slideLabel" aria-live="polite">– / –</span><button type="button" class="tbtn tbtn--icon" id="slideNext" aria-label="Next slide" data-tip="Next slide"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button></div>
           <span class="slides-sep" aria-hidden="true"></span>
-          <button type="button" class="btn btn--sm" id="zoomOut" aria-label="Zoom out">&minus;</button>
-          <span class="slides-status" id="zoomLabel">100%</span>
-          <button type="button" class="btn btn--sm" id="zoomIn" aria-label="Zoom in">+</button>
-          <button type="button" class="btn btn--sm" id="zoomFit">Fit</button>
-          <button type="button" class="btn btn--sm" id="expandBtn" aria-pressed="false">Full screen</button>
+          <div class="tb-seg"><button type="button" class="tbtn tbtn--icon" id="zoomOut" aria-label="Zoom out" data-tip="Zoom out"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg></button><span class="slides-status" id="zoomLabel">100%</span><button type="button" class="tbtn tbtn--icon" id="zoomIn" aria-label="Zoom in" data-tip="Zoom in"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg></button></div>
+          <button type="button" class="tbtn tbtn--icon" id="zoomFit" aria-label="Fit" data-tip="Fit"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8V5a2 2 0 0 1 2-2h3"/><path d="M16 3h3a2 2 0 0 1 2 2v3"/><path d="M21 16v3a2 2 0 0 1-2 2h-3"/><path d="M8 21H5a2 2 0 0 1-2-2v-3"/></svg></button>
+          <button type="button" class="tbtn tbtn--icon tbtn--toggle" id="expandBtn" aria-pressed="false" aria-label="Full screen" data-tip="Full screen"><svg viewBox="0 0 24 24" aria-hidden="true" class="i-on"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="m21 3-7 7"/><path d="m3 21 7-7"/></svg><svg viewBox="0 0 24 24" aria-hidden="true" class="i-off"><path d="M4 14h6v6"/><path d="M20 10h-6V4"/><path d="m14 10 7-7"/><path d="m3 21 7-7"/></svg></button>
         </div>
         <div class="group">
-          <button type="button" class="btn btn--sm btn--accent" id="presentBtn">&#9654; Present</button>
-          <a class="btn btn--sm btn--accent" id="animatedLink" href="wild-knots-2026-1-animated.html">&#9654; Animated</a>
-          <a class="btn btn--sm" href="wild-knots-2026-1.pdf" target="_blank" rel="noopener">Open in new tab</a>
-          <a class="btn btn--sm" href="wild-knots-2026-1.pdf" download="Nudos-Salvajes-Lenin-Angarita.pdf">Download</a>
+          <button type="button" class="tbtn tbtn--primary" id="presentBtn"><svg viewBox="0 0 24 24" aria-hidden="true" class="i-fill"><path d="M7 4.5v15l12-7.5z"/></svg><span>Present</span></button>
+          <a class="tbtn tbtn--primary" id="animatedLink" href="wild-knots-2026-1-animated.html"><svg viewBox="0 0 24 24" aria-hidden="true" class="i-fill"><path d="M12 3l1.8 5.4L19 10l-5.2 1.6L12 17l-1.8-5.4L5 10l5.2-1.6z"/><path d="M19 15.5l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/></svg><span>Animated</span></a>
+          <a class="tbtn tbtn--icon" href="wild-knots-2026-1.pdf" target="_blank" rel="noopener" aria-label="Open in new tab" data-tip="Open in new tab"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg></a>
+          <a class="tbtn tbtn--icon" href="wild-knots-2026-1.pdf" download="Nudos-Salvajes-Lenin-Angarita.pdf" aria-label="Download" data-tip="Download"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg></a>
         </div>
       </div>
       <div class="slides-viewer" id="slidesViewer" tabindex="0"
@@ -187,8 +183,8 @@ body.presenting{ overflow:hidden; }
             <span class="slides-status" style="text-align:left;">Interactive slides with animated figures</span>
           </div>
           <div class="group">
-            <button type="button" class="btn btn--sm btn--accent" id="animPresent">&#9654; Present</button>
-            <a class="btn btn--sm" href="wild-knots-2026-1-animated.html" download="Nudos-Salvajes-animada-Lenin-Angarita.html" title="Download the animated version (HTML page)">Download</a>
+            <button type="button" class="tbtn tbtn--primary" id="animPresent"><svg viewBox="0 0 24 24" aria-hidden="true" class="i-fill"><path d="M7 4.5v15l12-7.5z"/></svg><span>Present</span></button>
+            <a class="tbtn tbtn--icon" href="wild-knots-2026-1-animated.html" download="Nudos-Salvajes-animada-Lenin-Angarita.html" aria-label="Download the animated version (HTML page)" data-tip="Download (HTML)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg></a>
           </div>
         </div>
         <iframe class="anim-frame" id="animFrame" data-src="wild-knots-2026-1-animated.html"
@@ -442,7 +438,7 @@ body.presenting{ overflow:hidden; }
   function setExpanded(on){
     card.classList.toggle('expanded', on);
     document.body.classList.toggle('slides-expanded', on);
-    expandBtn.textContent = on ? 'Exit full screen' : 'Full screen';
+    expandBtn.classList.toggle('is-on', on); expandBtn.setAttribute('aria-label', on ? 'Exit full screen' : 'Full screen'); expandBtn.setAttribute('data-tip', on ? 'Exit full screen' : 'Full screen');
     expandBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
     if(page) fitView();
     viewer.focus();
