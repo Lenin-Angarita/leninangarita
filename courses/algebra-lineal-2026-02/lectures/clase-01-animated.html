@@ -146,6 +146,10 @@ details.sol .katex-display { font-size: .92em; }
 /* fórmula que no cabe ni reducida: sombra que indica que se puede deslizar */
 .katex-display { overflow-x: auto; overflow-y: hidden; }
 .katex-display.kd-scroll { box-shadow: inset -14px 0 10px -12px rgba(27, 36, 48, .35); }
+/* fórmula dentro del texto más ancha que su párrafo (celular): se desliza dentro de sí misma */
+.katex.k-wide { display: inline-block; max-width: 100%; overflow-x: auto; overflow-y: hidden; vertical-align: middle; }
+/* nada (p. ej. una etiqueta de un tablero junto al borde) ensancha la página */
+main { overflow-x: clip; }
 </style>
 </head>
 <body>
@@ -836,8 +840,18 @@ $$\begin{aligned} \cos\theta &= \frac{ \begin{pmatrix} 2\\ 1\\ -2 \end{pmatrix} 
       if (k.scrollWidth > d.clientWidth + 1) d.classList.add('kd-scroll');
     });
   }
+  /* fórmulas dentro del texto: si una no cabe en el ancho de su párrafo, queda deslizable */
+  function fitInline() {
+    document.querySelectorAll('.katex').forEach(function (k) {
+      if (k.closest('.katex-display')) return;
+      k.classList.remove('k-wide');
+      var host = k.parentElement;
+      while (host && getComputedStyle(host).display.indexOf('inline') === 0) host = host.parentElement;
+      if (host && k.scrollWidth > host.clientWidth + 1) k.classList.add('k-wide');
+    });
+  }
   var t;
-  function later(ms) { clearTimeout(t); t = setTimeout(fitMath, ms); }
+  function later(ms) { clearTimeout(t); t = setTimeout(function () { fitMath(); fitInline(); }, ms); }
   if (document.readyState === 'complete') later(50); else addEventListener('load', function () { later(50); });
   addEventListener('resize', function () { later(250); });
 })();
