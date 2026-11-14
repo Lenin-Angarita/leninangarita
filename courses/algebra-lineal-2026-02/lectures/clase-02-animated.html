@@ -171,6 +171,16 @@ table.rel td:hover, table.rel td.on { background: #eef2fb; }
 .katex-display.kd-scroll { box-shadow: inset -14px 0 10px -12px rgba(27, 36, 48, .35); }
 /* fórmula dentro del texto más ancha que su párrafo (celular): se desliza dentro de sí misma */
 .katex.k-wide { display: inline-block; max-width: 100%; overflow-x: auto; overflow-y: hidden; vertical-align: middle; }
+/* tableros: espacio arriba y abajo para las etiquetas de los puntos (no tapan el título) */
+.lab .vb { margin-top: 2.1em; margin-bottom: .9em; }
+/* cada tablero en su propia capa: al arrastrar se redibuja solo él */
+.lab.card { contain: paint; }
+.vb { transform: translateZ(0); }
+/* pantallas táctiles: la barra sin desenfoque (en algunos Android el desenfoque deja
+   "fantasmas" de texto al redibujar rápido lo que pasa por debajo) */
+@media (hover: none) {
+  #topbar { -webkit-backdrop-filter: none; backdrop-filter: none; background: var(--paper); }
+}
 /* nada (p. ej. una etiqueta de un tablero junto al borde) ensancha la página */
 main { overflow-x: clip; }
 </style>
